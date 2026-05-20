@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grafik Admin v2</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.10/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <script>
     window.__db = supabase.createClient(
       "https://rdnjeyucsszvxkcxqbed.supabase.co",
@@ -20,7 +20,8 @@
   </style>
 </head>
 <body class="bg-gray-50">
-  <div id="root"></div>
+  <div id="root"><div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px"><div style="width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#4f46e5;border-radius:50%;animation:spin 0.8s linear infinite"></div><div style="color:#9ca3af;font-size:14px;font-family:sans-serif">Ładowanie panelu…</div></div></div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
   <script type="text/babel" data-presets="react">
     const db = window.__db;
@@ -129,7 +130,7 @@
 
     function renderDayCell(info){
       const {shift,night,weekend,duty24h,custom,isWeekend}=info;
-      if(isWeekend&&weekend)return{
+      if(weekend)return{
         style:"bg-emerald-50 text-emerald-900 border-emerald-400 font-semibold shadow-sm",
         content:<div className="flex flex-col items-center justify-center gap-1 text-center w-full h-full p-1"><span className="text-emerald-700 flex items-center justify-center gap-1"><PhoneCall className="w-4 h-4"/>Dyżur weekendowy</span></div>,
       };
@@ -142,7 +143,7 @@
         const c=CUSTOM_COLORS[custom.colorIdx??0];
         return{style:`${c.bg} ${c.text} ${c.border}`,content:<div className="flex flex-col items-center justify-center w-full h-full p-1 min-h-[46px] min-w-0 overflow-hidden"><span className="font-semibold text-xs line-clamp-2 break-words text-center leading-tight w-full">{custom.name||"Niestandardowa"}</span>{custom.from&&<span className="text-xs opacity-80 whitespace-nowrap">{custom.from} – {custom.to}</span>}</div>};
       }
-      if(isWeekend)return{style:"bg-gray-50 text-gray-400 border-dashed border-gray-200",content:<div className="flex items-center justify-center w-full h-full p-1 min-h-[46px]">Wolne</div>};
+      if(isWeekend&&shift==="Wolne")return{style:"bg-gray-50 text-gray-400 border-dashed border-gray-200",content:<div className="flex items-center justify-center w-full h-full p-1 min-h-[46px]">Wolne</div>};
       let shiftLabel="",style="";
       if(shift==="Poranna")          {shiftLabel="06:30 – 14:30";style="bg-blue-50 text-blue-800 border-blue-200";}
       else if(shift==="Dzienna")     {shiftLabel="08:00 – 16:00";style="bg-emerald-50 text-emerald-800 border-emerald-200";}
@@ -1086,7 +1087,7 @@
     ══════════════════════════════════════════════ */
     function StatystykiTab({people,shiftsMap}){
       const[selYear,setSelYear]=React.useState(2026);
-      const[selMonth,setSelMonth]=React.useState(5);
+      const[selMonth,setSelMonth]=React.useState(4);
 
       const stats=React.useMemo(()=>{
         const firstDay=new Date(selYear,selMonth,1),lastDay=new Date(selYear,selMonth+1,0);
@@ -1121,7 +1122,7 @@
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-wrap items-center gap-3">
             <div className="flex flex-wrap gap-1.5">
-              {MONTH_NAMES.slice(5,12).map((m,i)=>{const mi=i+5;return(
+              {MONTH_NAMES.slice(4,12).map((m,i)=>{const mi=i+4;return(
                 <button key={mi} onClick={()=>setSelMonth(mi)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selMonth===mi?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-indigo-50"}`}>{m}</button>
               );})}
             </div>
