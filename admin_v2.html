@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grafik Admin v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.__db = supabase.createClient(
+      "https://rdnjeyucsszvxkcxqbed.supabase.co",
+      "sb_publishable_E6OiEImZAh6AwGNdKPiSDQ_DRYQy5NK"
+    );
+  </script>
+  <style>
+    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const db = window.__db;
+
+    /* ── ikony ── */
+    const CalendarDays=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
+    const Calendar=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+    const User=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+    const PhoneCall=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>;
+    const BarChart3=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 3v18h18"/><rect width="4" height="7" x="7" y="10" rx="1"/><rect width="4" height="12" x="15" y="5" rx="1"/></svg>;
+    const Pencil=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>;
+    const Plus=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
+    const Trash=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    const X=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+    const Check=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>;
+    const AlertTriangle=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
+    const RefreshCw=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>;
+    const RotateCw=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M21 21v-5h-5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/></svg>;
+    const History=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
+    const Clock=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    const Copy=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+    const ClipboardPaste=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>;
+    const ChevronDown=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m6 9 6 6 6-6"/></svg>;
+
+    /* ── stałe ── */
+    const DAYS_OF_WEEK=["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
+    const DAYS_SHORT=["Pon","Wt","Śr","Czw","Pt","Sob","Nd"];
+    const MONTH_NAMES=["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+    const DISPLAY_START=new Date(2026,4,1);
+    const DISPLAY_END=new Date(2026,11,31);
+    const SCHEDULE_START=new Date(2026,2,30);
+    const WEEKS=13;
+
+    /* rotacja kwartalna — takie same jak w admin.html */
+    const DEFAULT_PEOPLE_IDS=["p1","p2","p3","p4"];
+    const WEEKEND_BY_WEEK=["p1","p2","p3","p4","p1","p2","p3","p4","p1","p2","p3","p4","p1"];
+    const NIGHT_BY_WEEK  =["p2","p3","p4","p1","p2","p3","p4","p1","p2","p3","p4","p1","p2"];
+    const PORANNA_BY_WEEK=["p3","p4","p1","p2","p3","p4","p1","p2","p3","p4","p1","p2","p3"];
+
+    const SHIFT_TYPES=[
+      {value:"Poranna",        label:"Poranna",         hours:"06:30 – 14:30", color:"bg-blue-50 text-blue-800 border-blue-200"},
+      {value:"Dzienna",        label:"Dzienna",          hours:"08:00 – 16:00", color:"bg-emerald-50 text-emerald-800 border-emerald-200"},
+      {value:"Popoludniowa",   label:"Popołudniowa",     hours:"13:30 – 21:30", color:"bg-orange-50 text-orange-900 border-orange-300"},
+      {value:"DyzurWeekendowy",label:"Dyżur Weekendowy", hours:"",              color:"bg-emerald-700 text-white border-emerald-600"},
+      {value:"Duty24h",        label:"Dyżur 24h",        hours:"całą dobę",     color:"bg-amber-50 text-amber-900 border-amber-300"},
+      {value:"Urlop",          label:"Urlop",            hours:"",              color:"bg-yellow-50 text-yellow-800 border-yellow-300"},
+      {value:"Wolne",          label:"Wolne",            hours:"",              color:"bg-gray-50 text-gray-400 border-gray-200"},
+      {value:"Niestandardowa", label:"Niestandardowa",   hours:"",              color:"bg-violet-50 text-violet-800 border-violet-300"},
+    ];
+    const STAT_COLS=[
+      {key:"Poranna",         label:"Poranna",        color:"bg-blue-100 text-blue-800"},
+      {key:"Dzienna",         label:"Dzienna",         color:"bg-emerald-100 text-emerald-800"},
+      {key:"Popoludniowa",    label:"Popołudniowa",    color:"bg-orange-100 text-orange-800"},
+      {key:"Nocna",           label:"Nocka",           color:"bg-slate-700 text-slate-100"},
+      {key:"DyzurWeekendowy", label:"Dyżur Weekend",   color:"bg-emerald-700 text-white"},
+      {key:"Duty24h",         label:"Dyżur 24h",       color:"bg-amber-100 text-amber-800"},
+      {key:"Urlop",           label:"Urlop",           color:"bg-yellow-100 text-yellow-800"},
+      {key:"Wolne",           label:"Wolne",           color:"bg-gray-100 text-gray-500"},
+    ];
+
+    const CUSTOM_COLORS=[
+      {bg:"bg-violet-100",border:"border-violet-400",text:"text-violet-900"},
+      {bg:"bg-pink-100",  border:"border-pink-400",  text:"text-pink-900"},
+      {bg:"bg-cyan-100",  border:"border-cyan-400",  text:"text-cyan-900"},
+      {bg:"bg-lime-100",  border:"border-lime-400",  text:"text-lime-900"},
+      {bg:"bg-rose-100",  border:"border-rose-400",  text:"text-rose-900"},
+    ];
+
+    /* ── helpers ── */
+    function dateKey(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
+    function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d;}
+    function startOfWeek(date){const d=new Date(date),jsDay=d.getDay();d.setDate(d.getDate()+(jsDay===0?-6:1-jsDay));d.setHours(0,0,0,0);return d;}
+    function formatDate(date){return `${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}.${date.getFullYear()}`;}
+    function toDayIndex(date){return (date.getDay()+6)%7;}
+    function initials(name){const p=name.split(" ").filter(Boolean);return ((p[0]?.[0]??'?')+(p[1]?.[0]??'')).toUpperCase();}
+    function weekIndexOf(date){return Math.floor((startOfWeek(date).getTime()-SCHEDULE_START.getTime())/(7*24*3600*1000));}
+
+    function Spinner({text}){return <div className="min-h-screen flex items-center justify-center"><div className="text-center space-y-3"><div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>{text&&<div className="text-gray-500 text-sm">{text}</div>}</div></div>;}
+
+    /* ── renderDayCell — identyczny styl jak w grafiku pracownika ── */
+    function NightBadge(){
+      return(
+        <div className="bg-slate-800 text-slate-100 text-[10px] py-1 w-full border-t border-slate-700 flex flex-col items-center justify-center">
+          <span className="flex items-center gap-1 font-semibold text-amber-300"><Clock className="w-3 h-3"/>NOCKA</span>
+          <span className="opacity-90 font-mono">21:30–06:30</span>
+        </div>
+      );
+    }
+
+    /* shiftTypeToInfo — mapuje nowy enum na stary format dla renderowania */
+    function shiftTypeToInfo(s){
+      if(!s) return {shift:"Wolne",night:false,weekend:false,duty24h:false,custom:null,dayIndex:0,isWeekend:false};
+      const di=s._dayIndex||0,isWknd=di>=5,night=!!s.night_duty;
+      switch(s.shift_type){
+        case "Poranna":         return {shift:"Poranna",       night,weekend:false,duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+        case "Dzienna":         return {shift:"Dzienna",        night,weekend:false,duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+        case "Popoludniowa":    return {shift:"Popołudniowa",   night,weekend:false,duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+        case "DyzurWeekendowy": return {shift:"Dzienna",        night:false,weekend:true, duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+        case "Duty24h":         return {shift:"Dzienna",        night:false,weekend:false,duty24h:true, custom:null,dayIndex:di,isWeekend:isWknd};
+        case "Urlop":           return {shift:"Urlop",          night:false,weekend:false,duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+        case "Niestandardowa":  return {shift:"Niestandardowa", night,weekend:false,duty24h:false,
+          custom:{name:s.custom_name||"Niestandardowa",from:s.custom_from?.slice(0,5)||"",to:s.custom_to?.slice(0,5)||"",colorIdx:0},dayIndex:di,isWeekend:isWknd};
+        default:                return {shift:"Wolne",          night:false,weekend:false,duty24h:false,custom:null,dayIndex:di,isWeekend:isWknd};
+      }
+    }
+
+    function renderDayCell(info){
+      const {shift,night,weekend,duty24h,custom,isWeekend}=info;
+      if(isWeekend&&weekend)return{
+        style:"bg-emerald-50 text-emerald-900 border-emerald-400 font-semibold shadow-sm",
+        content:<div className="flex flex-col items-center justify-center gap-1 text-center w-full h-full p-1"><span className="text-emerald-700 flex items-center justify-center gap-1"><PhoneCall className="w-4 h-4"/>Dyżur weekendowy</span></div>,
+      };
+      if(duty24h)return{
+        style:"bg-amber-50 text-amber-900 border-amber-400 font-semibold shadow-sm",
+        content:<div className="flex flex-col items-center justify-center gap-1 text-center w-full h-full p-1"><span className="text-amber-700 flex items-center justify-center gap-1"><PhoneCall className="w-4 h-4"/>Dyżur 24h</span><span className="text-[10px] text-amber-600 font-normal">do odebrania</span></div>,
+      };
+      if(shift==="Urlop")return{style:"bg-yellow-50 text-yellow-800 border-yellow-300",content:<div className="flex items-center justify-center w-full h-full p-1 min-h-[46px]"><span className="font-semibold">Urlop</span></div>};
+      if(shift==="Niestandardowa"&&custom){
+        const c=CUSTOM_COLORS[custom.colorIdx??0];
+        return{style:`${c.bg} ${c.text} ${c.border}`,content:<div className="flex flex-col items-center justify-center w-full h-full p-1 min-h-[46px] min-w-0 overflow-hidden"><span className="font-semibold text-xs line-clamp-2 break-words text-center leading-tight w-full">{custom.name||"Niestandardowa"}</span>{custom.from&&<span className="text-xs opacity-80 whitespace-nowrap">{custom.from} – {custom.to}</span>}</div>};
+      }
+      if(isWeekend)return{style:"bg-gray-50 text-gray-400 border-dashed border-gray-200",content:<div className="flex items-center justify-center w-full h-full p-1 min-h-[46px]">Wolne</div>};
+      let shiftLabel="",style="";
+      if(shift==="Poranna")          {shiftLabel="06:30 – 14:30";style="bg-blue-50 text-blue-800 border-blue-200";}
+      else if(shift==="Dzienna")     {shiftLabel="08:00 – 16:00";style="bg-emerald-50 text-emerald-800 border-emerald-200";}
+      else if(shift==="Popołudniowa"){shiftLabel="13:30 – 21:30";style="bg-orange-50 text-orange-900 border-orange-300";}
+      else                           {shiftLabel="Wolne";style="bg-gray-50 text-gray-400 border-dashed border-gray-200";}
+      if(night)return{
+        style:`${style} overflow-hidden shadow-sm flex flex-col p-0`,
+        content:<div className="flex flex-col w-full h-full"><div className="flex-1 flex flex-col items-center justify-center p-1 w-full min-h-[36px]"><span className="text-xs font-semibold">{shiftLabel}</span></div><NightBadge/></div>,
+      };
+      return{style,content:<div className="flex flex-col items-center justify-center w-full h-full p-1 min-h-[46px]"><span className="font-medium text-xs">{shiftLabel}</span></div>};
+    }
+
+    /* ── Modals ── */
+    function ConfirmModal({message,onConfirm,onCancel}){
+      return(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
+            <div className="text-gray-800 font-semibold">{message}</div>
+            <div className="flex gap-3">
+              <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50">Anuluj</button>
+              <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700">Potwierdź</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── Modal edycji zmiany ── */
+    function EditShiftModal({cells,person,date,currentShift,onClose,onSave}){
+      const initType=currentShift?.shift_type==="Nocna"?"Popoludniowa":(currentShift?.shift_type||"Dzienna");
+      const[shiftType,setShiftType]=React.useState(initType);
+      const[nightDuty,setNightDuty]=React.useState(currentShift?.shift_type==="Nocna"?true:!!currentShift?.night_duty);
+      const[customName,setCustomName]=React.useState(currentShift?.custom_name||"");
+      const[customFrom,setCustomFrom]=React.useState(currentShift?.custom_from?.slice(0,5)||"");
+      const[customTo,setCustomTo]=React.useState(currentShift?.custom_to?.slice(0,5)||"");
+      const[saving,setSaving]=React.useState(false);
+      const canHaveNight=["Poranna","Dzienna","Popoludniowa","Niestandardowa"].includes(shiftType);
+      const handleSave=async()=>{
+        setSaving(true);
+        await onSave({shift_type:shiftType,night_duty:canHaveNight?nightDuty:false,custom_name:customName||null,custom_from:customFrom||null,custom_to:customTo||null});
+        setSaving(false);
+      };
+      return(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
+            <div className="bg-indigo-700 px-5 py-4">
+              {cells&&cells.length>1?(
+                <>
+                  <div className="text-white font-bold text-lg">Edytujesz {cells.length} zmian</div>
+                  <div className="text-indigo-200 text-sm">Wybrana zmiana zostanie zastosowana do wszystkich zaznaczonych komórek</div>
+                </>
+              ):(
+                <>
+                  <div className="text-white font-bold text-lg">{person?.name}</div>
+                  <div className="text-indigo-200 text-sm">{date?DAYS_OF_WEEK[toDayIndex(new Date(date+"T12:00:00"))]+", "+formatDate(new Date(date+"T12:00:00")):""}</div>
+                </>
+              )}
+            </div>
+            <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
+              <div className="text-sm font-semibold text-gray-700">Typ zmiany</div>
+              <div className="grid grid-cols-2 gap-2">
+                {SHIFT_TYPES.map(s=>(
+                  <button key={s.value} onClick={()=>setShiftType(s.value)}
+                    className={`px-3 py-2.5 rounded-xl border-2 text-left transition-all ${shiftType===s.value?`${s.color} ring-2 ring-indigo-400 ring-offset-1`:"bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"}`}>
+                    <div className="font-semibold text-sm">{s.label}</div>
+                    {s.hours&&<div className="text-xs opacity-70 mt-0.5">{s.hours}</div>}
+                  </button>
+                ))}
+              </div>
+              {canHaveNight&&(
+                <button onClick={()=>setNightDuty(v=>!v)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${nightDuty?"bg-slate-800 border-slate-700 text-slate-100":"bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"}`}>
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${nightDuty?"bg-amber-400 border-amber-400":"border-gray-400"}`}>
+                    {nightDuty&&<Check className="w-3 h-3 text-slate-900"/>}
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-sm">Dyżur nocny</div>
+                    <div className={`text-xs mt-0.5 ${nightDuty?"text-slate-300":"text-gray-400"}`}>21:30 – 06:30 · liczone jako Nocka w statystykach</div>
+                  </div>
+                </button>
+              )}
+              {shiftType==="Niestandardowa"&&(
+                <div className="space-y-3 bg-violet-50 rounded-xl p-4 border border-violet-200">
+                  <div><label className="text-xs font-semibold text-gray-600 block mb-1">Nazwa</label><input value={customName} onChange={e=>setCustomName(e.target.value)} placeholder="np. Szkolenie" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"/></div>
+                  <div className="flex gap-3">
+                    <div className="flex-1"><label className="text-xs font-semibold text-gray-600 block mb-1">Od</label><input type="time" value={customFrom} onChange={e=>setCustomFrom(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"/></div>
+                    <div className="flex-1"><label className="text-xs font-semibold text-gray-600 block mb-1">Do</label><input type="time" value={customTo} onChange={e=>setCustomTo(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"/></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-5 pb-5 flex gap-3">
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50">Anuluj</button>
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-indigo-700 text-white font-semibold hover:bg-indigo-800 disabled:opacity-60 flex items-center justify-center gap-2">
+                {saving?<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>:<Check className="w-4 h-4"/>}Zapisz
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: AKTUALNY GRAFIK
+    ══════════════════════════════════════════════ */
+    function GrafikTab({people,shiftsMap,onShiftSaved,adminMode}){
+      const[activeMonth,setActiveMonth]=React.useState(()=>{const t=new Date();const m=t.getMonth();return(t.getFullYear()===2026&&m>=4&&m<=11)?`2026-${m}`:"2026-4";});
+      const[subView,setSubView]=React.useState("tygodniowo");
+      const[editModal,setEditModal]=React.useState(null);   // {cells:[{person,date}], currentShift}
+      const[selectedDay,setSelectedDay]=React.useState(null);
+      const[collapsedWeeks,setCollapsedWeeks]=React.useState(null);
+      const[toast,setToast]=React.useState(null);
+      // multi-select: Set kluczy "personId|dateKey", + indeks tygodnia żeby czyścić przy zmianie
+      const[selection,setSelection]=React.useState(new Set());
+      const[selectionWeek,setSelectionWeek]=React.useState(null);
+
+      const allMonths=[];
+      for(let m=4;m<=11;m++) allMonths.push({key:`2026-${m}`,label:`${MONTH_NAMES[m]} 2026`,year:2026,month:m});
+
+      const today=new Date();today.setHours(0,0,0,0);
+      const todayKey=dateKey(today);
+      const[cwYear,cwMonth]=activeMonth.split("-").map(Number);
+
+      const weeklyBlocks=React.useMemo(()=>{
+        const blocks=[];
+        for(let ws=new Date(startOfWeek(DISPLAY_START));ws<=DISPLAY_END;ws=addDays(ws,7)){
+          blocks.push({weekStart:new Date(ws),weekEnd:addDays(ws,6),days:Array.from({length:7},(_,i)=>addDays(ws,i))});
+        }
+        return blocks;
+      },[]);
+
+      const monthWeeks=weeklyBlocks.filter(b=>b.days.some(d=>d.getFullYear()===cwYear&&d.getMonth()===cwMonth));
+      const currentWeekIdx=weeklyBlocks.findIndex(b=>b.days.some(d=>dateKey(d)===todayKey));
+
+      const cwState=React.useMemo(()=>{
+        if(collapsedWeeks!==null) return collapsedWeeks;
+        const init={};
+        weeklyBlocks.forEach((_,i)=>{if(i!==currentWeekIdx)init[i]=true;});
+        return init;
+      },[weeklyBlocks,currentWeekIdx,collapsedWeeks]);
+
+      /* Kalendarz miesięczny dla widoku dziennego */
+      const firstDay=new Date(2026,cwMonth,1);
+      const lastDay=new Date(2026,cwMonth+1,0);
+      const gridStart=startOfWeek(firstDay);
+      const calCells=[];
+      for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) calCells.push(new Date(d));
+      while(calCells.length%7!==0) calCells.push(addDays(calCells[calCells.length-1],1));
+
+      const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
+
+      const selKey=(personId,dk)=>`${personId}|${dk}`;
+
+      const toggleCell=(person,date,weekIdx)=>{
+        if(!adminMode) return;
+        const dk=dateKey(date);
+        const k=selKey(person.id,dk);
+        setSelection(prev=>{
+          // jeśli inny tydzień — wyczyść i zacznij od nowa
+          if(selectionWeek!==null&&selectionWeek!==weekIdx){
+            setSelectionWeek(weekIdx);
+            return new Set([k]);
+          }
+          setSelectionWeek(weekIdx);
+          const n=new Set(prev);
+          if(n.has(k)) n.delete(k); else n.add(k);
+          return n;
+        });
+      };
+
+      const clearSelection=()=>{setSelection(new Set());setSelectionWeek(null);};
+
+      const openMultiEdit=()=>{
+        if(selection.size===0) return;
+        const cells=[...selection].map(k=>{
+          const[pid,dk]=k.split("|");
+          const person=people.find(p=>p.id===pid);
+          return{person,date:dk};
+        });
+        // currentShift = pierwsza zaznaczona komórka (podpowiedź)
+        const first=cells[0];
+        const currentShift=shiftsMap[first.person.id]?.[first.date]||null;
+        setEditModal({cells,currentShift});
+      };
+
+      const handleSaveMulti=async({shift_type,night_duty,custom_name,custom_from,custom_to})=>{
+        const{cells}=editModal;
+        const upsertRows=cells.map(({person,date})=>({person_id:person.id,date,shift_type,night_duty,custom_name:custom_name||null,custom_from:custom_from||null,custom_to:custom_to||null}));
+        const{error}=await db.from("shifts").upsert(upsertRows,{onConflict:"person_id,date"});
+        if(error){showToast("Błąd zapisu: "+error.message,false);return;}
+        const histRows=cells.map(({person,date})=>({person_id:person.id,date,shift_type,note:night_duty?"+ dyżur nocny":null}));
+        await db.from("shift_history").insert(histRows);
+        cells.forEach(({person,date})=>onShiftSaved(person.id,date,{person_id:person.id,date,shift_type,night_duty,custom_name:custom_name||null,custom_from:custom_from||null,custom_to:custom_to||null}));
+        showToast(`Zapisano ${cells.length} zmian`);
+        setEditModal(null);
+        clearSelection();
+      };
+
+      return(
+        <div className="space-y-4">
+          {/* Selektor miesiąca */}
+          <div className="flex flex-wrap gap-2">
+            {allMonths.map(m=>(
+              <button key={m.key} onClick={()=>{setActiveMonth(m.key);clearSelection();}}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${activeMonth===m.key?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-indigo-50"}`}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Pasek multi-select */}
+          {adminMode&&selection.size>0&&(
+            <div className="flex items-center gap-3 px-4 py-3 bg-indigo-700 text-white rounded-xl shadow-sm">
+              <span className="font-semibold text-sm">Zaznaczono: {selection.size}</span>
+              <button onClick={openMultiEdit} className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-50">
+                <Pencil className="w-3.5 h-3.5"/>Edytuj zaznaczone
+              </button>
+              <button onClick={clearSelection} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-500">
+                <X className="w-3.5 h-3.5"/>Odznacz
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <h2 className="text-lg font-semibold text-indigo-900 flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-indigo-500"/>
+                {MONTH_NAMES[cwMonth]} {cwYear}
+              </h2>
+              <div className="flex items-center gap-3">
+                {adminMode&&<span className="hidden md:inline text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Kliknij komórkę aby zaznaczyć · zaznacz kilka i edytuj razem</span>}
+                <div className="flex gap-2">
+                  {[{key:"tygodniowo",label:"Tygodniowo"},{key:"dziennie",label:"Dziennie"}].map(v=>(
+                    <button key={v.key} onClick={()=>setSubView(v.key)} className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors ${subView===v.key?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-gray-50"}`}>{v.label}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Widok tygodniowy */}
+            {subView==="tygodniowo"&&(
+              <div className="p-4 space-y-3">
+                {monthWeeks.length===0&&<div className="text-center py-8 text-gray-400 text-sm">Brak tygodni w tym miesiącu</div>}
+                {monthWeeks.map(block=>{
+                  const globalIdx=weeklyBlocks.indexOf(block);
+                  const isCollapsed=!!cwState[globalIdx];
+                  const isCurrent=globalIdx===currentWeekIdx;
+                  const isSelWeek=selectionWeek===globalIdx;
+                  return(
+                    <div key={globalIdx} className={`border rounded-xl overflow-hidden ${isCurrent?"border-indigo-400 shadow-sm":isSelWeek?"border-amber-400":"border-gray-200"}`}>
+                      <button onClick={()=>setCollapsedWeeks(prev=>({...(prev||cwState),[globalIdx]:!((prev||cwState)[globalIdx])}))}
+                        className={`w-full flex items-center justify-between px-5 py-3 text-left ${isCurrent?"bg-indigo-50 hover:bg-indigo-100":isSelWeek?"bg-amber-50 hover:bg-amber-100":"bg-gray-50 hover:bg-gray-100"}`}>
+                        <span className={`font-semibold flex items-center gap-2 ${isCurrent?"text-indigo-700":isSelWeek?"text-amber-800":"text-indigo-900"}`}>
+                          <CalendarDays className="w-4 h-4 text-indigo-400"/>
+                          {formatDate(block.weekStart)} – {formatDate(block.weekEnd)}
+                          {isCurrent&&<span className="text-xs font-normal bg-indigo-700 text-white px-2 py-0.5 rounded-full">aktualny</span>}
+                          {isSelWeek&&selection.size>0&&<span className="text-xs font-normal bg-amber-500 text-white px-2 py-0.5 rounded-full">{selection.size} zaznaczonych</span>}
+                        </span>
+                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed?"":"rotate-180"}`}/>
+                      </button>
+                      {!isCollapsed&&(
+                        <div className="overflow-x-auto p-2 md:p-4">
+                          <table className="w-full min-w-[700px] border-collapse text-sm">
+                            <thead>
+                              <tr>
+                                <th className="p-2 md:p-3 text-left bg-gray-50 border border-gray-200 sticky left-0 z-10 min-w-[100px] md:min-w-[130px]">Pracownik</th>
+                                {block.days.map(date=>{
+                                  const di=toDayIndex(date),isWknd=di>=5,isToday=dateKey(date)===todayKey;
+                                  const inRange=date>=DISPLAY_START&&date<=DISPLAY_END;
+                                  return<th key={date.toISOString()} className={`p-2 text-center border border-gray-200 text-xs ${!inRange?"bg-gray-100 text-gray-400":isToday?"bg-indigo-100 text-indigo-800 font-bold":isWknd?"bg-red-50 text-red-800":"bg-gray-50 text-gray-700"}`}>
+                                    {DAYS_SHORT[di]}<div className="font-normal mt-1">{formatDate(date).slice(0,5)}</div>
+                                  </th>;
+                                })}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {people.map(person=>(
+                                <tr key={person.id} className="hover:bg-gray-50/60">
+                                  <td className="p-2 md:p-3 font-medium border border-gray-200 bg-white sticky left-0 z-10">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-xs font-bold text-indigo-700">{initials(person.name)}</div>
+                                      <span className="text-sm">{person.name}</span>
+                                    </div>
+                                  </td>
+                                  {block.days.map(date=>{
+                                    const inRange=date>=DISPLAY_START&&date<=DISPLAY_END;
+                                    if(!inRange) return<td key={date.toISOString()} className="p-1 border border-gray-200 bg-gray-50"></td>;
+                                    const dk=dateKey(date);
+                                    const raw=shiftsMap[person.id]?.[dk];
+                                    const di=toDayIndex(date);
+                                    const s=raw?{...raw,_dayIndex:di}:{shift_type:"Wolne",_dayIndex:di};
+                                    const info=shiftTypeToInfo(s);
+                                    if(!raw) info.isWeekend=di>=5;
+                                    const cell=renderDayCell(info);
+                                    const isSelected=selection.has(selKey(person.id,dk));
+                                    return(
+                                      <td key={date.toISOString()} className="p-1 border border-gray-200 align-top bg-white">
+                                        <div onClick={()=>adminMode&&toggleCell(person,date,globalIdx)}
+                                          className={`min-h-[4rem] md:min-h-[5.5rem] rounded-md border text-xs flex flex-col items-center justify-center relative transition-all
+                                            ${isSelected?"ring-2 ring-indigo-500 ring-offset-1 border-indigo-400 shadow-md":cell.style}
+                                            ${adminMode?"cursor-pointer hover:ring-2 hover:ring-indigo-400 hover:ring-offset-1":""}`}>
+                                          {isSelected&&<div className="absolute top-1 left-1 w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center z-10"><Check className="w-2.5 h-2.5 text-white"/></div>}
+                                          {cell.content}
+                                          {raw&&!isSelected&&<span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-400" title="Edytowane"/>}
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Widok dzienny - kalendarz */}
+            {subView==="dziennie"&&(
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-7 mb-1">
+                  {DAYS_SHORT.map(d=><div key={d} className="text-center text-xs font-semibold text-gray-500 py-1">{d}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {calCells.map(date=>{
+                    const dk=dateKey(date);
+                    const inRange=date>=DISPLAY_START&&date<=DISPLAY_END&&date.getMonth()===cwMonth&&date.getFullYear()===cwYear;
+                    const di=toDayIndex(date),isWknd=di>=5,isSelected=selectedDay===dk,isToday=todayKey===dk;
+                    return(
+                      <button key={dk} onClick={()=>{if(inRange)setSelectedDay(prev=>prev===dk?null:dk);}} disabled={!inRange}
+                        className={`relative rounded-lg border text-sm transition-all min-h-[52px] flex flex-col items-center justify-start pt-1 pb-1 px-1
+                          ${!inRange?"bg-gray-50 border-gray-100 text-gray-300 cursor-default":
+                            isSelected?"border-indigo-500 bg-indigo-50 shadow-md ring-2 ring-indigo-400":
+                            isWknd?"border-red-200 bg-red-50/50 hover:bg-red-100":
+                            "border-gray-200 bg-white hover:bg-indigo-50 hover:border-indigo-300"}`}>
+                        <span className={`text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday?"bg-indigo-700 text-white":isWknd&&inRange?"text-red-700":"text-gray-700"}`}>{date.getDate()}</span>
+                        {inRange&&people.length>0&&(
+                          <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center">
+                            {people.map(person=>{
+                              const s=shiftsMap[person.id]?.[dk];
+                              const t=s?.shift_type||"Wolne";
+                              let dot="bg-gray-300";
+                              if(s?.night_duty) dot="bg-purple-500";
+                              else if(t==="Poranna") dot="bg-blue-400";
+                              else if(t==="Dzienna") dot="bg-emerald-400";
+                              else if(t==="Popoludniowa") dot="bg-orange-400";
+                              else if(t==="DyzurWeekendowy"||t==="Duty24h") dot="bg-red-500";
+                              else if(t==="Urlop") dot="bg-yellow-400";
+                              return<span key={person.id} className={`w-1.5 h-1.5 rounded-full ${dot}`} title={person.name}/>;
+                            })}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedDay&&(()=>{
+                  const selDate=new Date(selectedDay+"T12:00:00");
+                  if(selDate.getMonth()!==cwMonth) return null;
+                  return(
+                    <div className={`mt-3 rounded-xl border p-4 ${toDayIndex(selDate)>=5?"border-red-200 bg-red-50/40":"border-indigo-200 bg-indigo-50/30"}`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-base font-bold text-gray-900">{DAYS_OF_WEEK[toDayIndex(selDate)]}, {formatDate(selDate)}</div>
+                        <button onClick={()=>setSelectedDay(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+                      </div>
+                      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        {people.map(person=>{
+                          const raw=shiftsMap[person.id]?.[selectedDay];
+                          const di=toDayIndex(selDate);
+                          const s=raw?{...raw,_dayIndex:di}:{shift_type:"Wolne",_dayIndex:di};
+                          const info=shiftTypeToInfo(s);
+                          if(!raw) info.isWeekend=di>=5;
+                          const cell=renderDayCell(info);
+                          return(
+                            <div key={person.id} onClick={()=>{if(adminMode){setEditModal({cells:[{person,date:selectedDay}],currentShift:raw||null});}}}
+                              className={`rounded-lg border p-3 ${cell.style} ${adminMode?"cursor-pointer hover:ring-2 hover:ring-indigo-400":""}`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 rounded-full bg-white/70 border border-current/20 flex items-center justify-center text-xs font-bold">{initials(person.name)}</div>
+                                <div className="font-semibold text-sm">{person.name}</div>
+                              </div>
+                              <div className="text-sm">{cell.content}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div className="flex flex-wrap gap-3 text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block"/>Poranna</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"/>Dzienna</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block"/>Popołudniowa</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"/>Nocka</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"/>Dyżur</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block"/>Urlop</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {editModal&&(
+            <EditShiftModal
+              cells={editModal.cells}
+              person={editModal.cells[0]?.person}
+              date={editModal.cells[0]?.date}
+              currentShift={editModal.currentShift}
+              onClose={()=>setEditModal(null)}
+              onSave={handleSaveMulti}/>
+          )}
+          {toast&&<div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.ok?"bg-emerald-600 text-white":"bg-red-600 text-white"}`}>{toast.ok?<Check className="w-4 h-4"/>:<AlertTriangle className="w-4 h-4"/>}{toast.msg}</div>}
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: ROTACJA KWARTALNA
+    ══════════════════════════════════════════════ */
+    function RotacjaTab({people}){
+      const scrollRef=React.useRef(null);
+      const scrollBy=dx=>{if(scrollRef.current)scrollRef.current.scrollBy({left:dx,behavior:"smooth"});};
+
+      /* Buduj rotację z legacy_id → kolejność pracowników */
+      const peopleByLegacy=React.useMemo(()=>{
+        const map={};
+        people.forEach((p,i)=>{ map[p.legacy_id||`p${i+1}`]=p; });
+        return map;
+      },[people]);
+
+      /* Generuj rotację per osoba per tydzień */
+      const rotationRows=React.useMemo(()=>{
+        return people.map((person,pi)=>{
+          const legacyId=person.legacy_id||`p${pi+1}`;
+          const weeks=[];
+          for(let w=0;w<WEEKS;w++){
+            let shift="Dzienna",night=false,weekend=false;
+            if(PORANNA_BY_WEEK[w]===legacyId) shift="Poranna";
+            else if(NIGHT_BY_WEEK[w]===legacyId){shift="Popołudniowa";night=true;}
+            if(WEEKEND_BY_WEEK[w]===legacyId) weekend=true;
+            weeks.push({shift,night,weekend});
+          }
+          return{person,weeks};
+        });
+      },[people]);
+
+      function getShiftBg(shift,night){
+        if(night) return "bg-orange-100 text-orange-900 border-orange-200";
+        if(shift==="Poranna") return "bg-blue-100 text-blue-800 border-blue-200";
+        if(shift==="Dzienna") return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        if(shift==="Popołudniowa") return "bg-orange-50 text-orange-800 border-orange-200";
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      }
+
+      /* Daty tygodni */
+      const weekDates=React.useMemo(()=>{
+        return Array.from({length:WEEKS},(_,i)=>{
+          const ws=addDays(SCHEDULE_START,i*7);
+          return{start:ws,end:addDays(ws,6)};
+        });
+      },[]);
+
+      /* Statystyki bilansu */
+      const stats=rotationRows.map(({person,weeks})=>({
+        name:person.name,
+        poranna:weeks.filter(w=>w.shift==="Poranna").length,
+        dzienna:weeks.filter(w=>w.shift==="Dzienna").length,
+        popoludniowa:weeks.filter(w=>w.shift==="Popołudniowa"&&!w.night).length,
+        nocki:weeks.filter(w=>w.night).length,
+        weekendy:weeks.filter(w=>w.weekend).length,
+      }));
+
+      return(
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2"><CalendarDays className="w-6 h-6 text-gray-400"/> Harmonogram (13 tygodni)</h2>
+              <div className="flex items-center gap-2">
+                <button onClick={()=>scrollBy(-380)} className="text-sm px-2.5 py-1.5 rounded-md border bg-white hover:bg-gray-50 text-gray-700 inline-flex items-center gap-1">← W lewo</button>
+                <button onClick={()=>scrollBy(380)}  className="text-sm px-2.5 py-1.5 rounded-md border bg-white hover:bg-gray-50 text-gray-700 inline-flex items-center gap-1">W prawo →</button>
+              </div>
+            </div>
+            <div ref={scrollRef} className="border border-gray-200 rounded-xl overflow-x-auto bg-white">
+              <table className="w-full text-left border-separate min-w-max" style={{borderSpacing:0}}>
+                <thead>
+                  <tr>
+                    <th className="p-4 bg-gray-50 font-semibold border-b border-r border-gray-200 sticky left-0 z-20">Pracownik</th>
+                    {weekDates.map((wd,i)=>(
+                      <th key={i} className="p-3 bg-gray-50 border-b border-gray-200 font-semibold text-center text-xs" style={{width:170,minWidth:170}}>
+                        <div>Tydz. {i+1}</div>
+                        <div className="font-normal text-gray-400 mt-0.5">{formatDate(wd.start).slice(0,5)}–{formatDate(wd.end).slice(0,5)}</div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rotationRows.map(({person,weeks})=>(
+                    <tr key={person.id} className="group hover:bg-gray-50/50">
+                      <td className="p-4 bg-white font-medium border-b border-r border-gray-100 sticky left-0 z-10 group-hover:bg-gray-50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-xs font-bold text-indigo-700">{initials(person.name)}</div>
+                          {person.name}
+                        </div>
+                      </td>
+                      {weeks.map((w,wIdx)=>(
+                        <td key={wIdx} className="p-2 border-b border-gray-100 align-top" style={{width:170,minWidth:170}}>
+                          <div className={`p-2.5 rounded-lg border text-sm text-center flex flex-col gap-1 ${getShiftBg(w.shift,w.night)}`}>
+                            <span className="font-semibold">{w.shift}</span>
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              {w.night&&<span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] border bg-orange-100 border-orange-200 text-orange-900"><PhoneCall className="w-2.5 h-2.5 mr-0.5"/> Nocki</span>}
+                              {w.weekend&&<span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] border bg-red-100 border-red-200 text-red-800"><PhoneCall className="w-2.5 h-2.5 mr-0.5"/> Weekend</span>}
+                            </div>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Bilans */}
+            <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-gray-800 font-semibold mb-3"><BarChart3 className="w-5 h-5 text-gray-500"/> Tabela Sprawiedliwości (Bilans 13 tyg.)</div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px] text-sm border-collapse">
+                  <thead><tr className="bg-white">
+                    <th className="text-left p-2 border-b border-gray-200">Pracownik</th>
+                    <th className="text-center p-2 border-b border-gray-200 text-blue-700">Poranna</th>
+                    <th className="text-center p-2 border-b border-gray-200 text-emerald-700">Dzienna</th>
+                    <th className="text-center p-2 border-b border-gray-200 text-orange-700">Popołudniowa</th>
+                    <th className="text-center p-2 border-b border-gray-200 bg-gray-50">Nocki</th>
+                    <th className="text-center p-2 border-b border-gray-200 bg-gray-50">Weekendy</th>
+                  </tr></thead>
+                  <tbody>
+                    {stats.map(s=>(
+                      <tr key={s.name} className="border-b border-gray-100">
+                        <td className="p-2 font-medium">{s.name}</td>
+                        <td className="p-2 text-center font-semibold text-blue-700">{s.poranna}</td>
+                        <td className="p-2 text-center font-semibold text-emerald-700">{s.dzienna}</td>
+                        <td className="p-2 text-center font-semibold text-orange-700">{s.popoludniowa}</td>
+                        <td className="p-2 text-center bg-gray-50/50 font-medium text-orange-700">{s.nocki}</td>
+                        <td className="p-2 text-center bg-gray-50/50 font-medium text-red-700">{s.weekendy}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: PRACA NA CYPRZE
+    ══════════════════════════════════════════════ */
+    function CyprTab({people,cyprusMap,setCyprusMap,onRefresh,adminMode}){
+      const[editDay,setEditDay]=React.useState(null);
+      const[copiedDay,setCopiedDay]=React.useState(null);
+      const[toast,setToast]=React.useState(null);
+      const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
+
+      const cyprMonths=[];
+      for(let m=4;m<=5;m++){
+        const firstDay=new Date(2026,m,1),lastDay=new Date(2026,m+1,0),gridStart=startOfWeek(firstDay);
+        const cells=[];
+        for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) cells.push(new Date(d));
+        while(cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
+        cyprMonths.push({label:MONTH_NAMES[m]+" 2026",firstDay,lastDay,cells});
+      }
+
+      const personColor=(personId)=>{
+        const idx=people.findIndex(p=>p.id===personId);
+        const colors=["bg-blue-100 text-blue-800 border-blue-300","bg-emerald-100 text-emerald-800 border-emerald-300","bg-orange-100 text-orange-900 border-orange-300","bg-violet-100 text-violet-900 border-violet-300","bg-pink-100 text-pink-800 border-pink-300"];
+        return colors[idx%colors.length]||"bg-gray-100 text-gray-800 border-gray-300";
+      };
+
+      /* Modal edycji Cypru */
+      const CyprusEditModal=({dk,entries:initEntries,onClose})=>{
+        const[entries,setEntries]=React.useState(initEntries.map(e=>({...e})));
+        const[newPersonId,setNewPersonId]=React.useState(people[0]?.id||"");
+        const[newFrom,setNewFrom]=React.useState("");
+        const[newTo,setNewTo]=React.useState("");
+        const[saving,setSaving]=React.useState(false);
+
+        const addEntry=()=>{if(!newPersonId)return;setEntries(prev=>[...prev,{person_id:newPersonId,shift_from:newFrom||null,shift_to:newTo||null}]);setNewFrom("");setNewTo("");};
+        const removeEntry=idx=>setEntries(prev=>prev.filter((_,i)=>i!==idx));
+
+        const handleSave=async()=>{
+          setSaving(true);
+          await db.from("cyprus_shifts").delete().eq("date",dk);
+          if(entries.length>0){
+            const rows=entries.map(e=>({person_id:e.person_id,date:dk,shift_from:e.shift_from||null,shift_to:e.shift_to||null}));
+            const{error}=await db.from("cyprus_shifts").insert(rows);
+            if(error){setSaving(false);showToast("Błąd zapisu: "+error.message,false);return;}
+          }
+          setCyprusMap(prev=>({...prev,[dk]:entries.length>0?entries.map(e=>({...e,date:dk})):[]}));
+          setSaving(false);showToast("Cypr zapisany ☀️");onClose();
+        };
+
+        const dateObj=new Date(dk);
+        return(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
+              <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+                <div><div className="text-white font-bold text-lg">Praca na Cyprze</div><div className="text-cyan-200 text-sm">{DAYS_OF_WEEK[toDayIndex(dateObj)]}, {formatDate(dateObj)}</div></div>
+                <button onClick={onClose} className="text-cyan-200 hover:text-white"><X className="w-6 h-6"/></button>
+              </div>
+              <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                {entries.length>0&&(
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Przypisani pracownicy</div>
+                    {entries.map((entry,i)=>{
+                      const person=people.find(p=>p.id===entry.person_id);
+                      return(
+                        <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-xl border ${personColor(entry.person_id)}`}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-white/60 flex items-center justify-center text-xs font-bold">{initials(person?.name||"?")}</div>
+                            <span className="font-semibold text-sm">{person?.name||"?"}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {entry.shift_from&&entry.shift_to?<span className="text-xs font-mono opacity-80">{entry.shift_from?.slice(0,5)} – {entry.shift_to?.slice(0,5)}</span>:<span className="text-xs opacity-60 italic">bez godzin</span>}
+                            <button onClick={()=>removeEntry(i)} className="text-red-400 hover:text-red-600"><X className="w-4 h-4"/></button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
+                  <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Dodaj pracownika</div>
+                  <select value={newPersonId} onChange={e=>setNewPersonId(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                    {people.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                  <div className="flex gap-3">
+                    <div className="flex-1"><label className="text-xs text-gray-500 block mb-1">Od</label><input type="time" value={newFrom} onChange={e=>setNewFrom(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"/></div>
+                    <div className="flex-1"><label className="text-xs text-gray-500 block mb-1">Do</label><input type="time" value={newTo} onChange={e=>setNewTo(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"/></div>
+                  </div>
+                  <button onClick={addEntry} className="w-full py-2 rounded-xl bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 flex items-center justify-center gap-2"><Plus className="w-4 h-4"/> Dodaj</button>
+                </div>
+              </div>
+              <div className="px-6 pb-6 flex gap-3">
+                <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50">Anuluj</button>
+                <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-cyan-600 text-white font-semibold hover:bg-cyan-700 disabled:opacity-60 flex items-center justify-center gap-2">
+                  {saving?<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>:<Check className="w-4 h-4"/>}Zapisz
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return(
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-5">
+            <h2 className="text-xl font-bold text-cyan-900 flex items-center gap-2 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0891b2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+              Praca na Cyprze — Maj i Czerwiec 2026
+            </h2>
+            <p className="text-sm text-cyan-700">{adminMode?"Kliknij dzień aby edytować.":"Włącz tryb admina, aby edytować."}</p>
+            {copiedDay&&adminMode&&(
+              <div className="mt-3 flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-2.5">
+                <Copy className="w-4 h-4 text-amber-600 shrink-0"/>
+                <span className="text-sm text-amber-800 font-medium">Skopiowano: <strong>{formatDate(new Date(copiedDay))}</strong> — kliknij docelowy dzień aby wkleić</span>
+                <button onClick={()=>setCopiedDay(null)} className="ml-auto text-amber-500 hover:text-amber-700"><X className="w-4 h-4"/></button>
+              </div>
+            )}
+          </div>
+
+          {editDay&&<CyprusEditModal dk={editDay} entries={cyprusMap[editDay]||[]} onClose={()=>setEditDay(null)}/>}
+
+          {cyprMonths.map(month=>(
+            <div key={month.label} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-4">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2"><Calendar className="w-5 h-5 opacity-80"/> {month.label}</h3>
+              </div>
+              <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+                {DAYS_OF_WEEK.map((d,i)=><div key={d} className={`text-center text-xs font-semibold py-2 ${i>=5?"text-red-500":"text-gray-500"}`}>{d}</div>)}
+              </div>
+              <div className="grid grid-cols-7" style={{gridAutoRows:"minmax(90px,auto)"}}>
+                {month.cells.map((date,idx)=>{
+                  const dk=dateKey(date);
+                  const isCurrentMonth=date>=month.firstDay&&date<=month.lastDay;
+                  const di=toDayIndex(date),isWknd=di>=5,isToday=dateKey(new Date())===dk;
+                  const dayEntries=cyprusMap[dk]||[];
+                  const isPasteTarget=copiedDay&&adminMode&&copiedDay!==dk;
+                  return(
+                    <div key={dk}
+                      onClick={()=>{
+                        if(!adminMode) return;
+                        if(copiedDay&&copiedDay!==dk){
+                          /* wklej — obsłużone przez parent przez onRefresh */
+                          (async()=>{
+                            const srcEntries=cyprusMap[copiedDay]||[];
+                            await db.from("cyprus_shifts").delete().eq("date",dk);
+                            if(srcEntries.length>0){
+                              const rows=srcEntries.map(e=>({person_id:e.person_id,date:dk,shift_from:e.shift_from,shift_to:e.shift_to}));
+                              const{error}=await db.from("cyprus_shifts").insert(rows);
+                              if(error){showToast("Błąd wklejania",false);return;}
+                            }
+                            setCyprusMap(prev=>({...prev,[dk]:srcEntries.map(e=>({...e,date:dk}))}));
+                            setCopiedDay(null);showToast("Wklejono");
+                          })();
+                        } else {
+                          setEditDay(dk);
+                        }
+                      }}
+                      className={`border-b border-r border-gray-100 min-h-[90px] p-1.5 flex flex-col relative
+                        ${isPasteTarget?"ring-2 ring-inset ring-amber-400 bg-amber-50/60":isWknd?"bg-red-50/40":!isCurrentMonth?"bg-gray-50/60":"bg-white"}
+                        ${adminMode?"cursor-pointer hover:bg-cyan-50/40 transition-colors":"cursor-default"}
+                        ${idx%7===6?"border-r-0":""}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday?"bg-cyan-600 text-white":isWknd?"text-red-400":!isCurrentMonth?"text-gray-400":"text-gray-700"}`}>{date.getDate()}</span>
+                        {adminMode&&dayEntries.length>0&&!copiedDay&&(
+                          <button onClick={e=>{e.stopPropagation();setCopiedDay(dk);}} className="w-5 h-5 flex items-center justify-center rounded text-gray-300 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"><Copy className="w-3.5 h-3.5"/></button>
+                        )}
+                        {isPasteTarget&&<ClipboardPaste className="w-3.5 h-3.5 text-amber-500"/>}
+                      </div>
+                      {dayEntries.map((entry,i)=>{
+                        const person=people.find(p=>p.id===entry.person_id);
+                        if(!person) return null;
+                        return(
+                          <div key={i} className={`mb-0.5 px-1.5 py-0.5 rounded text-xs border ${personColor(entry.person_id)} flex items-center gap-1`}>
+                            <span className="font-semibold truncate">{person.name}</span>
+                            {entry.shift_from&&entry.shift_to&&<span className="opacity-70 whitespace-nowrap ml-auto">{entry.shift_from?.slice(0,5)}–{entry.shift_to?.slice(0,5)}</span>}
+                          </div>
+                        );
+                      })}
+                      {adminMode&&dayEntries.length===0&&!isPasteTarget&&<div className="flex-1 flex items-center justify-center"><Plus className="w-4 h-4 text-gray-200"/></div>}
+                    </div>
+                  );
+                })}
+              </div>
+              {people.length>0&&(
+                <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-2">
+                  {people.map(p=>(
+                    <span key={p.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border font-medium ${personColor(p.id)}`}>
+                      <span className="w-2 h-2 rounded-full bg-current opacity-60"/>{p.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {toast&&<div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.ok?"bg-emerald-600 text-white":"bg-red-600 text-white"}`}>{toast.ok?<Check className="w-4 h-4"/>:<AlertTriangle className="w-4 h-4"/>}{toast.msg}</div>}
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: PRACA WARSZAWA (Marcin visits)
+    ══════════════════════════════════════════════ */
+    function WarszawaTab({marcinSet,setMarcinSet,onRefresh,adminMode}){
+      const[toast,setToast]=React.useState(null);
+      const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
+
+      const planMonths=[];
+      for(let m=5;m<=11;m++){
+        const firstDay=new Date(2026,m,1),lastDay=new Date(2026,m+1,0),gridStart=startOfWeek(firstDay);
+        const cells=[];
+        for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) cells.push(new Date(d));
+        while(cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
+        planMonths.push({label:MONTH_NAMES[m]+" 2026",firstDay,lastDay,cells});
+      }
+
+      const affectedWeekKeys=new Set();
+      marcinSet.forEach(dk=>{
+        const ws=startOfWeek(new Date(dk));
+        affectedWeekKeys.add(dateKey(ws));
+      });
+
+      const toggleDay=async(dk)=>{
+        if(!adminMode) return;
+        const isActive=marcinSet.has(dk);
+        if(isActive){
+          const{error}=await db.from("marcin_visits").delete().eq("date",dk);
+          if(error){showToast("Błąd: "+error.message,false);return;}
+          setMarcinSet(prev=>{const n=new Set(prev);n.delete(dk);return n;});
+        } else {
+          const{error}=await db.from("marcin_visits").insert({date:dk});
+          if(error){showToast("Błąd: "+error.message,false);return;}
+          setMarcinSet(prev=>new Set([...prev,dk]));
+        }
+        showToast(isActive?"Usunięto":"Dodano przyjazd");
+      };
+
+      const visitList=Array.from(marcinSet).sort();
+
+      return(
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 mb-1"><Calendar className="w-6 h-6 text-indigo-500"/> Przyjazdy Marcina do Warszawy</h2>
+                <p className="text-sm text-gray-500">Zaznaczone dni → cały tydzień Marcina przechodzi na zmianę <strong>Dzienną (08:00–16:00)</strong></p>
+                {!adminMode&&<p className="text-xs text-amber-600 mt-1 font-medium">Włącz tryb admina, aby edytować</p>}
+              </div>
+              <div className="flex flex-col gap-1 text-sm shrink-0">
+                <div className="flex items-center gap-2"><span className="w-5 h-5 rounded-md bg-indigo-500 inline-block"/><span className="text-gray-700">Dzień przyjazdu</span></div>
+                <div className="flex items-center gap-2"><span className="w-5 h-5 rounded-md bg-emerald-100 border border-emerald-300 inline-block"/><span className="text-gray-700">Cały tydzień → Dzienna</span></div>
+              </div>
+            </div>
+            {visitList.length>0&&(
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Zaznaczone dni ({visitList.length})</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {visitList.map(dk=><span key={dk} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-800 text-xs font-medium">{DAYS_OF_WEEK[toDayIndex(new Date(dk))]}, {formatDate(new Date(dk))}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {planMonths.map(month=>(
+            <div key={month.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+              <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2"><CalendarDays className="w-5 h-5 text-indigo-400"/> {month.label}</h3>
+              <div className="grid grid-cols-7 mb-1">
+                {DAYS_SHORT.map(d=><div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>)}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {month.cells.map(date=>{
+                  const dk=dateKey(date);
+                  const inRange=date>=month.firstDay&&date<=month.lastDay;
+                  const isVisit=marcinSet.has(dk);
+                  const di=toDayIndex(date),isWknd=di>=5,isToday=dateKey(new Date())===dk;
+                  const ws=startOfWeek(date);
+                  const isAffectedWeek=affectedWeekKeys.has(dateKey(ws))&&inRange;
+                  return(
+                    <button key={dk} onClick={()=>inRange&&!isWknd&&toggleDay(dk)} disabled={!inRange||isWknd||!adminMode}
+                      className={`relative rounded-lg border text-sm transition-all min-h-[52px] flex flex-col items-center justify-start pt-1 pb-1 px-1
+                        ${!inRange?"bg-gray-50 border-gray-100 text-gray-300 cursor-default":
+                          isWknd?"bg-red-50 border-red-100 text-red-300 cursor-default":
+                          isVisit?"bg-indigo-500 border-indigo-600 text-white shadow-md ring-2 ring-indigo-300":
+                          isAffectedWeek?"bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100":
+                          adminMode?"bg-white border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 text-gray-700":
+                          "bg-white border-gray-200 text-gray-700"}`}>
+                      <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full
+                        ${isToday&&!isVisit?"bg-indigo-600 text-white":isVisit?"bg-white/20 text-white":isWknd&&inRange?"text-red-400":""}`}>{date.getDate()}</span>
+                      {isVisit&&<span className="text-[9px] font-semibold mt-0.5 opacity-90">przyjazd</span>}
+                      {!isVisit&&isAffectedWeek&&!isWknd&&<span className="text-[9px] text-emerald-600 mt-0.5">Dzienna</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          {toast&&<div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.ok?"bg-emerald-600 text-white":"bg-red-600 text-white"}`}>{toast.ok?<Check className="w-4 h-4"/>:<AlertTriangle className="w-4 h-4"/>}{toast.msg}</div>}
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: HISTORIA
+    ══════════════════════════════════════════════ */
+    function HistoriaTab({people,onShiftUpdate}){
+      const[history,setHistory]=React.useState([]);
+      const[loading,setLoading]=React.useState(true);
+      const[confirmRestore,setConfirmRestore]=React.useState(null);
+      const[confirmDel,setConfirmDel]=React.useState(null);
+      const[toast,setToast]=React.useState(null);
+      const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
+
+      const fetchHistory=async()=>{
+        setLoading(true);
+        const{data,error}=await db.from("shift_history").select("id,person_id,date,shift_type,changed_by,note,created_at").order("created_at",{ascending:false}).limit(100);
+        setLoading(false);
+        if(!error) setHistory(data||[]);
+      };
+
+      React.useEffect(()=>{fetchHistory();},[]);
+
+      const handleDelete=async(id)=>{
+        const{error}=await db.from("shift_history").delete().eq("id",id);
+        if(error) showToast("Błąd usuwania",false);
+        else{setHistory(prev=>prev.filter(h=>h.id!==id));showToast("Wpis usunięty");}
+        setConfirmDel(null);
+      };
+
+      const getPerson=(id)=>people.find(p=>p.id===id)?.name||id;
+
+      const shiftTypeLabel=(t)=>SHIFT_TYPES.find(s=>s.value===t)?.label||t||"—";
+
+      return(
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2"><History className="w-6 h-6 text-indigo-500"/> Historia zmian</h2>
+            <button onClick={fetchHistory} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-100"><RotateCw className="w-4 h-4"/> Odśwież</button>
+          </div>
+          {loading?(
+            <div className="flex items-center justify-center py-16"><div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div></div>
+          ):history.length===0?(
+            <div className="text-center py-16 text-gray-400">
+              <History className="w-12 h-12 mx-auto mb-3 opacity-30"/>
+              <div className="text-sm">Brak wpisów w historii</div>
+              <div className="text-xs mt-1">Każda edycja zmiany zostanie tutaj zapisana</div>
+            </div>
+          ):(
+            <div className="space-y-2">
+              {history.map((entry,idx)=>{
+                const d=new Date(entry.created_at);
+                const dateStr=d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric"});
+                const timeStr=d.toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
+                const st=SHIFT_TYPES.find(s=>s.value===entry.shift_type);
+                return(
+                  <div key={entry.id} className={`flex items-center justify-between p-4 rounded-xl border ${idx===0?"border-indigo-200 bg-indigo-50/40":"border-gray-200 bg-gray-50/30"}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${idx===0?"bg-indigo-500":"bg-gray-300"}`}/>
+                      <div>
+                        <div className="font-medium text-sm text-gray-800 flex items-center gap-2">
+                          <span>{getPerson(entry.person_id)}</span>
+                          <span className="text-gray-400">·</span>
+                          <span>{entry.date}</span>
+                          <span className="text-gray-400">→</span>
+                          {st?<span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${st.color}`}>{st.label}</span>:<span className="text-gray-500 text-xs">{entry.shift_type}</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {dateStr} o {timeStr}
+                          {entry.note&&<span className="ml-2 italic">"{entry.note}"</span>}
+                          {entry.changed_by&&<span className="ml-2 text-gray-400">przez {entry.changed_by}</span>}
+                          {idx===0&&<span className="ml-2 text-indigo-600 font-medium">← najnowszy</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={()=>setConfirmDel(entry.id)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-medium hover:bg-red-100"><Trash className="w-3.5 h-3.5"/> Usuń</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {confirmDel&&<ConfirmModal message="Usunąć ten wpis z historii?" onConfirm={()=>handleDelete(confirmDel)} onCancel={()=>setConfirmDel(null)}/>}
+          {toast&&<div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.ok?"bg-emerald-600 text-white":"bg-red-600 text-white"}`}>{toast.ok?<Check className="w-4 h-4"/>:<AlertTriangle className="w-4 h-4"/>}{toast.msg}</div>}
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       ZAKŁADKA: STATYSTYKI MIESIĘCZNE
+    ══════════════════════════════════════════════ */
+    function StatystykiTab({people,shiftsMap}){
+      const[selYear,setSelYear]=React.useState(2026);
+      const[selMonth,setSelMonth]=React.useState(5);
+
+      const stats=React.useMemo(()=>{
+        const firstDay=new Date(selYear,selMonth,1),lastDay=new Date(selYear,selMonth+1,0);
+        return people.map(person=>{
+          const counts={};
+          STAT_COLS.forEach(c=>counts[c.key]=0);
+          for(let d=new Date(firstDay);d<=lastDay;d=addDays(d,1)){
+            const s=shiftsMap[person.id]?.[dateKey(d)];
+            // shift_type="Nocna" (stare dane) → liczy się jako Popołudniowa + Nocka
+            const rawType=s?.shift_type||"Wolne";
+            const baseType=rawType==="Nocna"?"Popoludniowa":rawType;
+            if(counts[baseType]!==undefined) counts[baseType]++;
+            else counts["Wolne"]++;
+            if(s?.night_duty||rawType==="Nocna") counts["Nocna"]++;
+          }
+          // Razem = suma zmian bez Wolnych i bez Nocki (Nocka to nakładka, nie osobny dzień)
+          const total=STAT_COLS.filter(c=>c.key!=="Wolne"&&c.key!=="Nocna").reduce((a,c)=>a+(counts[c.key]||0),0);
+          return{person,counts,total};
+        });
+      },[people,shiftsMap,selYear,selMonth]);
+
+      const imbalance=React.useMemo(()=>{
+        const result={};
+        STAT_COLS.filter(c=>c.key!=="Wolne").forEach(col=>{
+          const vals=stats.map(s=>s.counts[col.key]);
+          if(vals.length>1){const mx=Math.max(...vals),mn=Math.min(...vals);result[col.key]=(mx-mn)>1;}
+        });
+        return result;
+      },[stats]);
+
+      return(
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap gap-1.5">
+              {MONTH_NAMES.slice(5,12).map((m,i)=>{const mi=i+5;return(
+                <button key={mi} onClick={()=>setSelMonth(mi)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selMonth===mi?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-indigo-50"}`}>{m}</button>
+              );})}
+            </div>
+          </div>
+
+          {Object.values(imbalance).some(Boolean)&&(
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2 text-sm text-amber-800">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0"/>
+              <span>Nierówny rozkład: {STAT_COLS.filter(c=>imbalance[c.key]).map(c=>c.label).join(", ")}</span>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-indigo-500"/>
+              <h2 className="font-semibold text-gray-900">Statystyki — {MONTH_NAMES[selMonth]} {selYear}</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="p-3 text-left border border-gray-200 font-semibold text-gray-700 sticky left-0 bg-gray-50 min-w-[130px]">Pracownik</th>
+                    {STAT_COLS.map(col=>(
+                      <th key={col.key} className="p-3 text-center border border-gray-200 font-semibold text-gray-700 min-w-[90px]">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${col.color}`}>{col.label}</span>
+                          {imbalance[col.key]&&<AlertTriangle className="w-3 h-3 text-amber-500"/>}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="p-3 text-center border border-gray-200 font-semibold text-gray-700 min-w-[70px]">Razem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.map(({person,counts,total})=>(
+                    <tr key={person.id} className="hover:bg-gray-50/40 border-t border-gray-100">
+                      <td className="p-3 border border-gray-200 bg-white sticky left-0 font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-xs font-bold text-indigo-700">{initials(person.name)}</div>
+                          {person.name}
+                        </div>
+                      </td>
+                      {STAT_COLS.map(col=>{
+                        const val=counts[col.key]||0;
+                        return<td key={col.key} className="p-3 text-center border border-gray-200"><span className={`text-base font-bold ${val===0?"text-gray-300":"text-gray-800"}`}>{val}</span></td>;
+                      })}
+                      <td className="p-3 text-center border border-gray-200 font-bold text-gray-700">{total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                {stats.length>1&&(
+                  <tfoot>
+                    <tr className="bg-gray-50 border-t-2 border-gray-300">
+                      <td className="p-3 border border-gray-200 font-semibold text-gray-600 sticky left-0 bg-gray-50">Suma</td>
+                      {STAT_COLS.map(col=>{
+                        const sum=stats.reduce((acc,s)=>acc+(s.counts[col.key]||0),0);
+                        return<td key={col.key} className="p-3 text-center border border-gray-200 font-semibold text-gray-700">{sum}</td>;
+                      })}
+                      <td className="p-3 text-center border border-gray-200 font-bold text-gray-800">{stats.reduce((a,s)=>a+s.total,0)}</td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       LOGOWANIE
+    ══════════════════════════════════════════════ */
+    function LoginScreen(){
+      const[email,setEmail]=React.useState("");
+      const[pass,setPass]=React.useState("");
+      const[error,setError]=React.useState("");
+      const[loading,setLoading]=React.useState(false);
+      const handleLogin=async()=>{
+        if(!email.trim()||!pass.trim()){setError("Wpisz email i hasło");return;}
+        setLoading(true);setError("");
+        const{error:err}=await db.auth.signInWithPassword({email:email.trim(),password:pass});
+        setLoading(false);
+        if(err){setError("Nieprawidłowy email lub hasło");setPass("");}
+      };
+      return(
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+            <div className="bg-indigo-700 px-6 py-5">
+              <div className="text-white font-bold text-xl flex items-center gap-2"><CalendarDays className="w-6 h-6"/> Admin — Grafik v2</div>
+              <div className="text-indigo-200 text-sm mt-1">Panel administracyjny</div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div><label className="text-sm font-semibold text-gray-700 block mb-1">Email</label><input type="email" autoFocus value={email} onChange={e=>{setEmail(e.target.value);setError("");}} onKeyDown={e=>{if(e.key==="Enter")handleLogin();}} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="admin@przyklad.pl"/></div>
+              <div><label className="text-sm font-semibold text-gray-700 block mb-1">Hasło</label><input type="password" value={pass} onChange={e=>{setPass(e.target.value);setError("");}} onKeyDown={e=>{if(e.key==="Enter")handleLogin();}} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>
+              {error&&<div className="text-red-600 text-sm">{error}</div>}
+            </div>
+            <div className="px-6 pb-6">
+              <button onClick={handleLogin} disabled={loading} className="w-full py-2.5 rounded-xl bg-indigo-700 text-white font-semibold hover:bg-indigo-800 disabled:opacity-60 flex items-center justify-center gap-2">
+                {loading?<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> Logowanie…</>:"Zaloguj"}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════
+       GŁÓWNA APLIKACJA
+    ══════════════════════════════════════════════ */
+    function App(){
+      const[activeTab,setActiveTab]=React.useState("grafik");
+      const[adminMode,setAdminMode]=React.useState(false);
+      const[session,setSession]=React.useState(null);
+      const[authChecked,setAuthChecked]=React.useState(false);
+      const[loading,setLoading]=React.useState(true);
+      const[dbError,setDbError]=React.useState(null);
+      const[lastUpdated,setLastUpdated]=React.useState(null);
+      const[toast,setToast]=React.useState(null);
+
+      const[people,setPeople]=React.useState([]);
+      const[shiftsMap,setShiftsMap]=React.useState({});
+      const[cyprusMap,setCyprusMap]=React.useState({});
+      const[marcinSet,setMarcinSet]=React.useState(new Set());
+
+      React.useEffect(()=>{
+        db.auth.getSession().then(({data})=>{setSession(data.session);setAuthChecked(true);});
+        const{data:listener}=db.auth.onAuthStateChange((_event,s)=>setSession(s));
+        return()=>listener.subscription.unsubscribe();
+      },[]);
+
+      const fetchData=async()=>{
+        setLoading(true);
+        try{
+          const[{data:pData,error:pErr},{data:sData,error:sErr},{data:cData,error:cErr},{data:mData,error:mErr}]=await Promise.all([
+            db.from("people").select("id,name,legacy_id").eq("active",true).order("legacy_id"),
+            db.from("shifts").select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to"),
+            db.from("cyprus_shifts").select("person_id,date,shift_from,shift_to"),
+            db.from("marcin_visits").select("date"),
+          ]);
+          if(pErr||sErr){setDbError("Błąd ładowania danych.");return;}
+          setPeople(pData||[]);
+          const sm={};
+          (sData||[]).forEach(s=>{if(!sm[s.person_id])sm[s.person_id]={};sm[s.person_id][s.date]=s;});
+          setShiftsMap(sm);
+          const cm={};
+          (cData||[]).forEach(c=>{if(!cm[c.date])cm[c.date]=[];cm[c.date].push(c);});
+          setCyprusMap(cm);
+          const ms=new Set((mData||[]).map(m=>m.date));
+          setMarcinSet(ms);
+          setLastUpdated(new Date());
+          setDbError(null);
+        }catch(e){setDbError("Błąd połączenia z bazą danych.");}
+        finally{setLoading(false);}
+      };
+
+      React.useEffect(()=>{if(session) fetchData();},[session]);
+
+      const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
+
+      const handleShiftSaved=(personId,date,shiftData)=>{
+        setShiftsMap(prev=>({...prev,[personId]:{...prev[personId],[date]:shiftData}}));
+        setLastUpdated(new Date());
+      };
+
+      if(!authChecked) return<Spinner/>;
+      if(!session) return<LoginScreen/>;
+      if(loading) return<Spinner text="Ładowanie danych…"/>;
+
+      if(dbError&&people.length===0) return(
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md text-center space-y-4">
+            <div className="text-red-600 font-bold">Błąd ładowania danych</div>
+            <div className="text-red-700 text-sm">{dbError}</div>
+            <button onClick={fetchData} className="px-4 py-2 bg-indigo-700 text-white rounded-xl text-sm font-medium hover:bg-indigo-800">Spróbuj ponownie</button>
+          </div>
+        </div>
+      );
+
+      const TABS=[
+        {key:"grafik",     icon:<CalendarDays className="w-5 h-5"/>, label:"Aktualny grafik"},
+        {key:"rotacja",    icon:<BarChart3 className="w-5 h-5"/>,    label:"Rotacja kwartalna"},
+        {key:"cypr",       icon:<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>, label:"Praca na Cyprze"},
+        {key:"warszawa",   icon:<Calendar className="w-5 h-5"/>,     label:"Praca Warszawa"},
+        {key:"historia",   icon:<History className="w-5 h-5"/>,      label:"Historia"},
+        {key:"statystyki", icon:<BarChart3 className="w-5 h-5"/>,    label:"Statystyki"},
+      ];
+
+      return(
+        <div className="min-h-screen p-4 md:p-8 font-sans text-gray-800">
+          {toast&&<div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl text-white font-medium text-sm ${toast.ok?"bg-emerald-600":"bg-red-600"}`}>{toast.msg}</div>}
+
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <header className="mb-6 flex flex-row items-center justify-between gap-4">
+              <div>
+                <h1 className="text-xl md:text-3xl font-bold text-gray-900 flex items-center gap-2 md:gap-3 mb-1">
+                  <CalendarDays className="w-6 h-6 md:w-8 md:h-8 text-indigo-700"/>
+                  <span className="hidden md:inline">Admin — Grafik v2</span>
+                  <span className="md:hidden">Admin v2</span>
+                </h1>
+                {lastUpdated&&<p className="text-gray-400 text-xs">Akt.: {lastUpdated.toLocaleTimeString("pl-PL")}</p>}
+              </div>
+              <div className="flex flex-wrap gap-2 items-center">
+                <button onClick={fetchData} className="flex items-center gap-1.5 px-2 md:px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-100">
+                  <RefreshCw className="w-4 h-4"/><span className="hidden md:inline">Odśwież</span>
+                </button>
+                <button onClick={()=>setAdminMode(v=>!v)}
+                  className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl font-semibold text-sm shadow-sm ${adminMode?"bg-red-600 text-white hover:bg-red-700":"bg-indigo-700 text-white hover:bg-indigo-800"}`}>
+                  <Pencil className="w-4 h-4"/><span className="hidden md:inline">{adminMode?"Wyłącz tryb admina":"Tryb admina"}</span>
+                </button>
+                <button onClick={()=>db.auth.signOut()} className="flex items-center gap-1.5 px-2 md:px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-100">
+                  <User className="w-4 h-4"/><span className="hidden md:inline">Wyloguj</span>
+                </button>
+              </div>
+            </header>
+
+            {adminMode&&(
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6 flex items-center gap-3 text-amber-900 shadow-sm">
+                <Pencil className="w-5 h-5 text-amber-600 shrink-0"/>
+                <div className="text-sm"><strong className="text-amber-800">Tryb Administratora aktywny.</strong> Kliknij komórkę dnia aby edytować. Zmiany zapisują się automatycznie w Supabase.</div>
+              </div>
+            )}
+
+            {/* Taby */}
+            <div className="flex gap-1 md:gap-4 mb-6 border-b border-gray-200 overflow-x-auto">
+              {TABS.map(tab=>(
+                <button key={tab.key} onClick={()=>setActiveTab(tab.key)} title={tab.label}
+                  className={`pb-4 px-3 md:px-2 font-medium flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 ${activeTab===tab.key?"border-b-2 border-indigo-700 text-indigo-700":"text-gray-500 hover:text-gray-700"}`}>
+                  {tab.icon}
+                  <span className="hidden md:inline">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {activeTab==="grafik"     &&<GrafikTab people={people} shiftsMap={shiftsMap} onShiftSaved={handleShiftSaved} adminMode={adminMode}/>}
+            {activeTab==="rotacja"    &&<RotacjaTab people={people}/>}
+            {activeTab==="cypr"       &&<CyprTab people={people} cyprusMap={cyprusMap} setCyprusMap={setCyprusMap} onRefresh={fetchData} adminMode={adminMode}/>}
+            {activeTab==="warszawa"   &&<WarszawaTab marcinSet={marcinSet} setMarcinSet={setMarcinSet} onRefresh={fetchData} adminMode={adminMode}/>}
+            {activeTab==="historia"   &&<HistoriaTab people={people} onShiftUpdate={fetchData}/>}
+            {activeTab==="statystyki" &&<StatystykiTab people={people} shiftsMap={shiftsMap}/>}
+          </div>
+        </div>
+      );
+    }
+
+    const root=ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
