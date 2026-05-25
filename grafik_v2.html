@@ -9,6 +9,7 @@
   <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.10/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script>
     window.__db = supabase.createClient(
       "https://rdnjeyucsszvxkcxqbed.supabase.co",
@@ -101,6 +102,13 @@
       const DOW = ["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
       const dayIdx = d => (d.getDay()+6)%7;
 
+      const countWeekends = (days) => {
+        const byWeek = {};
+        days.forEach(d => { const wk = dateKey(startOfWeek(d)); byWeek[wk] = (byWeek[wk]||0)+1; });
+        let total = 0;
+        Object.values(byWeek).forEach(cnt => { total += cnt >= 2 ? WEEKEND_RATE : WEEKEND_RATE/2; });
+        return total;
+      };
       const data = people.map(person => {
         const nocki = [], weekendy = [];
         for (let d = new Date(fd); d <= ld; d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+1)) {
@@ -110,14 +118,15 @@
           if (s.night_duty || s.shift_type === "Nocna") nocki.push(new Date(d));
           if (s.shift_type === "DyzurWeekendowy") weekendy.push(new Date(d));
         }
-        return { name: person.name, nocki, weekendy, kwN: nocki.length*NOCKA_RATE, kwW: weekendy.length*WEEKEND_RATE, suma: nocki.length*NOCKA_RATE + weekendy.length*WEEKEND_RATE };
+        const kwW = countWeekends(weekendy);
+        return { name: person.name, nocki, weekendy, kwN: nocki.length*NOCKA_RATE, kwW, suma: nocki.length*NOCKA_RATE + kwW };
       });
 
       const esc = v => { const s = String(v); return s.includes(',') || s.includes('"') ? '"'+s.replace(/"/g,'""')+'"' : s; };
       const rows = [];
 
       rows.push(`ROZLICZENIE NOCEK I DYZUROW WEEKENDOWYCH — ${monthName.toUpperCase()},,,,,`);
-      rows.push(`Stawka za nocek:  ${NOCKA_RATE} zl [brutto],,,Stawka za dyzur weekendowy:  ${WEEKEND_RATE} zl [brutto],,`);
+      rows.push(`Stawka za nocek:  ${NOCKA_RATE} zl [brutto],,,Stawka za dyzur weekendowy:  ${WEEKEND_RATE} zl / weekend [brutto] (1 dzien = ${WEEKEND_RATE/2} zl),,`);
       rows.push(`Pracownik,Liczba nocek,Kwota nocki,Liczba weekendow,Kwota weekendow,SUMA [brutto]`);
 
       data.forEach(p => {
@@ -763,7 +772,11 @@
                           }
                         }
                         const kwotaNocki = nocki.length * NOCKA_RATE;
-                        const kwotaWeekend = weekendy.length * WEEKEND_RATE;
+                        const wkndByWeek = {};
+                        weekendy.forEach(w => { const wk = dateKey(startOfWeek(w.date)); wkndByWeek[wk] = (wkndByWeek[wk]||0)+1; });
+                        let kwotaWeekend = 0;
+                        const numWeekendow = Object.keys(wkndByWeek).length;
+                        Object.values(wkndByWeek).forEach(cnt => { kwotaWeekend += cnt >= 2 ? WEEKEND_RATE : WEEKEND_RATE/2; });
                         const sumaRozliczenia = kwotaNocki + kwotaWeekend;
                         const fmtZl = v => v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " zł";
                         return (
@@ -813,7 +826,7 @@
                                       <span className="font-mono font-bold text-slate-800">{fmtZl(kwotaNocki)}</span>
                                     </div>
                                     <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                      <span className="text-emerald-700">Weekendy ({weekendy.length} × {WEEKEND_RATE} zł)</span>
+                                      <span className="text-emerald-700">Weekendy ({numWeekendow} wknd, {weekendy.length} dni)</span>
                                       <span className="font-mono font-bold text-emerald-800">{fmtZl(kwotaWeekend)}</span>
                                     </div>
                                   </div>

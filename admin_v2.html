@@ -905,7 +905,7 @@
       const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
 
       const planMonths=[];
-      for(let m=5;m<=11;m++){
+      for(let m=4;m<=11;m++){
         const firstDay=new Date(2026,m,1),lastDay=new Date(2026,m+1,0),gridStart=startOfWeek(firstDay);
         const cells=[];
         for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) cells.push(new Date(d));
