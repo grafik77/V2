@@ -27,6 +27,19 @@
   <script type="text/babel" data-presets="react">
     const db = window.__db;
 
+    // PostgREST caps responses at 1000 rows — page through.
+    async function fetchAllShifts(){
+      const all=[];
+      for(let from=0;;from+=1000){
+        const{data,error}=await db.from("shifts")
+          .select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to")
+          .order("date").order("person_id").range(from,from+999);
+        if(error) return{data:null,error};
+        all.push(...data);
+        if(data.length<1000) return{data:all,error:null};
+      }
+    }
+
     /* ── ikony ── */
     const CalendarDays=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
     const Calendar=({className})=><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
@@ -61,12 +74,11 @@
         {fill:"FFF0DD",font:"7B4200"},{fill:"F0DDFF",font:"4B1C82"},
       ];
 
-      const countWeekends=(days)=>{
+      // Weekend liczony tylko jako całość (sob+niedz) = WEEKEND_RATE. Niepełny weekend nie płatny.
+      const countFullWeekends=(days)=>{
         const byWeek={};
         days.forEach(d=>{const wk=dateKey(startOfWeek(d));byWeek[wk]=(byWeek[wk]||0)+1;});
-        let total=0;
-        Object.values(byWeek).forEach(cnt=>{total+=cnt>=2?WEEKEND_RATE:WEEKEND_RATE/2;});
-        return total;
+        return Object.values(byWeek).filter(cnt=>cnt>=2).length;
       };
 
       const data=people.map((person,idx)=>{
@@ -78,8 +90,9 @@
           if(s.night_duty||s.shift_type==="Nocna")nocki.push(new Date(d));
           if(s.shift_type==="DyzurWeekendowy")weekendy.push(new Date(d));
         }
-        const kwW=countWeekends(weekendy);
-        return{name:person.name,nocki,weekendy,kwN:nocki.length*NOCKA_RATE,kwW,suma:nocki.length*NOCKA_RATE+kwW,colorIdx:idx%PERSON_COLORS.length};
+        const numWeekendow=countFullWeekends(weekendy);
+        const kwW=numWeekendow*WEEKEND_RATE;
+        return{name:person.name,nocki,weekendy,numWeekendow,kwN:nocki.length*NOCKA_RATE,kwW,suma:nocki.length*NOCKA_RATE+kwW,colorIdx:idx%PERSON_COLORS.length};
       });
 
       const wb=XLSX.utils.book_new();
@@ -125,7 +138,7 @@
           {v:p.name,s:{fill:fill(nameBg),font:font("000000",true),border}},
           {v:p.nocki.length,s:{fill:fill("DAE3F3"),font:font("1F3864"),border,alignment:{horizontal:"center"}}},
           {v:p.kwN,s:{fill:fill("DAE3F3"),font:font("1F3864"),border,numFmt:'#,##0.00" zł"',alignment:{horizontal:"center"}}},
-          {v:p.weekendy.length,s:{fill:fill("F4E6FF"),font:font("4B1C82"),border,alignment:{horizontal:"center"}}},
+          {v:p.numWeekendow,s:{fill:fill("F4E6FF"),font:font("4B1C82"),border,alignment:{horizontal:"center"}}},
           {v:p.kwW,s:{fill:fill("F4E6FF"),font:font("4B1C82"),border,numFmt:'#,##0.00" zł"',alignment:{horizontal:"center"}}},
           {v:p.suma,s:{fill:fill("E2EFDA"),font:font("375623",true),border,numFmt:'#,##0.00" zł"',alignment:{horizontal:"center"}}},
         ]);
@@ -134,7 +147,7 @@
       // Sum row
       const tN=data.reduce((a,p)=>a+p.nocki.length,0);
       const tKN=data.reduce((a,p)=>a+p.kwN,0);
-      const tW=data.reduce((a,p)=>a+p.weekendy.length,0);
+      const tW=data.reduce((a,p)=>a+p.numWeekendow,0);
       const tKW=data.reduce((a,p)=>a+p.kwW,0);
       const tS=data.reduce((a,p)=>a+p.suma,0);
       const sumS={fill:fill("E2EFDA"),font:font("375623",true),border,alignment:{horizontal:"center"}};
@@ -497,6 +510,20 @@
 
       const clearSelection=()=>{setSelection(new Set());setSelectionWeek(null);};
 
+      // zaznacz/odznacz grupę dni (Pon-Pt lub Sob-Nd) dla jednej osoby w danym tygodniu
+      const selectGroup=(person,weekIdx,dates)=>{
+        if(!adminMode||dates.length===0) return;
+        const keys=dates.map(d=>selKey(person.id,dateKey(d)));
+        setSelection(prev=>{
+          const base=(selectionWeek!==null&&selectionWeek!==weekIdx)?new Set():new Set(prev);
+          const allSelected=keys.every(k=>base.has(k));
+          if(allSelected) keys.forEach(k=>base.delete(k));
+          else keys.forEach(k=>base.add(k));
+          return base;
+        });
+        setSelectionWeek(weekIdx);
+      };
+
       const openMultiEdit=()=>{
         if(selection.size===0) return;
         const cells=[...selection].map(k=>{
@@ -555,7 +582,7 @@
                 {MONTH_NAMES[cwMonth]} {cwYear}
               </h2>
               <div className="flex items-center gap-3">
-                {adminMode&&<span className="hidden md:inline text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Kliknij komórkę aby zaznaczyć · zaznacz kilka i edytuj razem</span>}
+                {adminMode&&<span className="hidden md:inline text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Kliknij komórkę aby zaznaczyć · "Pon-Pt"/"Wknd" przy osobie zaznacza cały blok · edytuj razem</span>}
                 <div className="flex gap-2">
                   {[{key:"tygodniowo",label:"Tygodniowo"},{key:"dziennie",label:"Dziennie"}].map(v=>(
                     <button key={v.key} onClick={()=>setSubView(v.key)} className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors ${subView===v.key?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-gray-50"}`}>{v.label}</button>
@@ -603,11 +630,32 @@
                             <tbody>
                               {people.map(person=>(
                                 <tr key={person.id} className="hover:bg-gray-50/60">
-                                  <td className="p-2 md:p-3 font-medium border border-gray-200 bg-white sticky left-0 z-10">
+                                  <td className="p-2 md:p-3 font-medium border border-gray-200 bg-white sticky left-0 z-10 align-top">
                                     <div className="flex items-center gap-2">
                                       <div className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-xs font-bold text-indigo-700">{initials(person.name)}</div>
                                       <span className="text-sm">{person.name}</span>
                                     </div>
+                                    {adminMode&&(()=>{
+                                      const inRangeDay=d=>d>=DISPLAY_START&&d<=DISPLAY_END;
+                                      const weekdayDates=block.days.slice(0,5).filter(inRangeDay);
+                                      const weekendDates=block.days.slice(5,7).filter(inRangeDay);
+                                      const weekdaySel=weekdayDates.length>0&&weekdayDates.every(d=>selection.has(selKey(person.id,dateKey(d))));
+                                      const weekendSel=weekendDates.length>0&&weekendDates.every(d=>selection.has(selKey(person.id,dateKey(d))));
+                                      return(
+                                        <div className="flex gap-1 mt-1.5">
+                                          {weekdayDates.length>0&&
+                                            <button onClick={()=>selectGroup(person,globalIdx,weekdayDates)} title="Zaznacz Pon-Pt tej osoby"
+                                              className={`text-[10px] px-1.5 py-0.5 rounded border font-medium transition-colors ${weekdaySel?"bg-indigo-600 text-white border-indigo-600":"bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"}`}>
+                                              Pon-Pt
+                                            </button>}
+                                          {weekendDates.length>0&&
+                                            <button onClick={()=>selectGroup(person,globalIdx,weekendDates)} title="Zaznacz Sob-Nd tej osoby"
+                                              className={`text-[10px] px-1.5 py-0.5 rounded border font-medium transition-colors ${weekendSel?"bg-emerald-600 text-white border-emerald-600":"bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"}`}>
+                                              Wknd
+                                            </button>}
+                                        </div>
+                                      );
+                                    })()}
                                   </td>
                                   {block.days.map(date=>{
                                     const inRange=date>=DISPLAY_START&&date<=DISPLAY_END;
@@ -1404,9 +1452,9 @@
                 const kwotaNocki=nocki.length*NOCKA_RATE;
                 const wkndByWeek={};
                 weekendy.forEach(w=>{const wk=dateKey(startOfWeek(w.date));wkndByWeek[wk]=(wkndByWeek[wk]||0)+1;});
-                let kwotaWeekend=0;
-                const numWeekendow=Object.keys(wkndByWeek).length;
-                Object.values(wkndByWeek).forEach(cnt=>{kwotaWeekend+=cnt>=2?WEEKEND_RATE:WEEKEND_RATE/2;});
+                // Weekend liczony tylko jako całość (sob+niedz) = WEEKEND_RATE. Niepełny weekend nie płatny.
+                const numWeekendow=Object.values(wkndByWeek).filter(cnt=>cnt>=2).length;
+                const kwotaWeekend=numWeekendow*WEEKEND_RATE;
                 const sumaRozliczenia=kwotaNocki+kwotaWeekend;
                 const fmtZl=v=>v.toLocaleString("pl-PL",{minimumFractionDigits:2,maximumFractionDigits:2})+" zł";
                 return(
@@ -1569,7 +1617,7 @@
         try{
           const[{data:pData,error:pErr},{data:sData,error:sErr},{data:cData,error:cErr},{data:mData,error:mErr}]=await Promise.all([
             db.from("people").select("id,name,legacy_id").eq("active",true).order("legacy_id"),
-            db.from("shifts").select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to"),
+            fetchAllShifts(),
             db.from("cyprus_shifts").select("person_id,date,shift_from,shift_to"),
             db.from("marcin_visits").select("date"),
           ]);

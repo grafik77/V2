@@ -32,6 +32,19 @@
   <script type="text/babel" data-presets="react">
     const db = window.__db;
 
+    // PostgREST caps responses at 1000 rows — page through.
+    async function fetchAllShifts() {
+      const all = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await db.from("shifts")
+          .select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to")
+          .order("date").order("person_id").range(from, from + 999);
+        if (error) return { data: null, error };
+        all.push(...data);
+        if (data.length < 1000) return { data: all, error: null };
+      }
+    }
+
     /* ── ikony ── */
     const Clock        = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
     const CalendarDays = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
@@ -380,7 +393,7 @@
           const [{ data: pData, error: pErr }, { data: sData, error: sErr },
                  { data: cData, error: cErr }, { data: mData, error: mErr }] = await Promise.all([
             db.from("people").select("id,name,legacy_id").eq("active", true).order("legacy_id"),
-            db.from("shifts").select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to"),
+            fetchAllShifts(),
             db.from("cyprus_shifts").select("person_id,date,shift_from,shift_to"),
             db.from("marcin_visits").select("date"),
           ]);
@@ -422,9 +435,9 @@
         return shiftTypeToInfo(s || null, dayIndex);
       }
 
-      /* ── Zakres dat do wyświetlenia: maj – grudzień 2026 ── */
-      const DISPLAY_START = new Date(2026, 4, 1);  // 1 maja
-      const DISPLAY_END   = new Date(2026, 11, 31); // 31 grudnia
+      /* ── Zakres dat do wyświetlenia: maj 2026 – styczeń 2027 ── */
+      const DISPLAY_START = new Date(2026, 4, 1);
+      const DISPLAY_END   = new Date(2027, 0, 31);
 
       function startOfWeekFn(date) {
         const d=new Date(date),jsDay=d.getDay();
@@ -445,9 +458,9 @@
       /* ── Miesiące ── */
       const allMonthsMap = React.useMemo(() => {
         const map = new Map();
-        for (let m=4; m<=11; m++) {
-          const key = `2026-${m}`;
-          map.set(key, { key, label:monthLabel(new Date(2026,m,1)), year:2026, month:m });
+        for (let d=new Date(DISPLAY_START.getFullYear(), DISPLAY_START.getMonth(), 1); d<=DISPLAY_END; d=new Date(d.getFullYear(), d.getMonth()+1, 1)) {
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          map.set(key, { key, label:monthLabel(d), year:d.getFullYear(), month:d.getMonth() });
         }
         return map;
       }, []);
@@ -474,8 +487,8 @@
       if (collapsedWeeks === null && weeklyBlocks.length > 0) setCollapsedWeeks(cwState);
 
       /* Kalendarz miesięczny */
-      const firstDay = new Date(2026, cwMonth, 1);
-      const lastDay  = new Date(2026, cwMonth+1, 0);
+      const firstDay = new Date(cwYear, cwMonth, 1);
+      const lastDay  = new Date(cwYear, cwMonth+1, 0);
       const gridStart = startOfWeekFn(firstDay);
       const calCells = [];
       for (let d=new Date(gridStart); d<=lastDay||toDayIndex(d)!==0; d=addDays(d,1)) calCells.push(new Date(d));
@@ -665,7 +678,7 @@
                         <div className="grid grid-cols-7 gap-1">
                           {calCells.map(date=>{
                             const dk=dateKey(date);
-                            const inMonth=date.getMonth()===cwMonth&&date.getFullYear()===2026;
+                            const inMonth=date.getMonth()===cwMonth&&date.getFullYear()===cwYear;
                             const inRange=date>=DISPLAY_START&&date<=DISPLAY_END&&inMonth;
                             const di=toDayIndex(date),isWknd=di>=5,isSelected=selectedDay===dk,isToday=todayKey===dk;
                             return (
