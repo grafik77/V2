@@ -33,11 +33,14 @@
     const db = window.__db;
 
     // PostgREST caps responses at 1000 rows — page through.
+    // Monday of the week containing DISPLAY_START, so the first week block is complete.
+    const DATA_FROM = "2026-10-26";
     async function fetchAllShifts() {
       const all = [];
       for (let from = 0; ; from += 1000) {
         const { data, error } = await db.from("shifts")
           .select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to")
+          .gte("date", DATA_FROM)
           .order("date").order("person_id").range(from, from + 999);
         if (error) return { data: null, error };
         all.push(...data);
@@ -435,9 +438,9 @@
         return shiftTypeToInfo(s || null, dayIndex);
       }
 
-      /* ── Zakres dat do wyświetlenia: maj 2026 – styczeń 2027 ── */
-      const DISPLAY_START = new Date(2026, 4, 1);
-      const DISPLAY_END   = new Date(2027, 0, 31);
+      /* ── Zakres dat do wyświetlenia: listopad 2026 – grudzień 2027 ── */
+      const DISPLAY_START = new Date(2026, 10, 1);
+      const DISPLAY_END   = new Date(2027, 11, 31);
 
       function startOfWeekFn(date) {
         const d=new Date(date),jsDay=d.getDay();
@@ -472,7 +475,7 @@
       const currentMonthKey = activeMonth || (allMonthsMap.has(todayMonthKey) ? todayMonthKey : allMonths[0]?.key);
       const currentMonthData = allMonthsMap.get(currentMonthKey);
 
-      const [cwYear, cwMonth] = currentMonthKey ? currentMonthKey.split("-").map(Number) : [2026, 4];
+      const [cwYear, cwMonth] = currentMonthKey ? currentMonthKey.split("-").map(Number) : [2026, 10];
 
       const monthWeeks = weeklyBlocks.filter(block =>
         block.days.some(d => d.getFullYear()===cwYear && d.getMonth()===cwMonth)

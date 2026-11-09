@@ -28,11 +28,14 @@
     const db = window.__db;
 
     // PostgREST caps responses at 1000 rows — page through.
+    // Monday of the week containing DISPLAY_START, so the first week block is complete.
+    const DATA_FROM="2026-10-26";
     async function fetchAllShifts(){
       const all=[];
       for(let from=0;;from+=1000){
         const{data,error}=await db.from("shifts")
           .select("person_id,date,shift_type,night_duty,custom_name,custom_from,custom_to")
+          .gte("date",DATA_FROM)
           .order("date").order("person_id").range(from,from+999);
         if(error) return{data:null,error};
         all.push(...data);
@@ -244,8 +247,11 @@
     const DAYS_OF_WEEK=["Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota","Niedziela"];
     const DAYS_SHORT=["Pon","Wt","Śr","Czw","Pt","Sob","Nd"];
     const MONTH_NAMES=["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
-    const DISPLAY_START=new Date(2026,4,1);
-    const DISPLAY_END=new Date(2026,11,31);
+    const DISPLAY_START=new Date(2026,10,1);
+    const DISPLAY_END=new Date(2027,11,31);
+    const DISPLAY_MONTHS=[];
+    for(let d=new Date(DISPLAY_START.getFullYear(),DISPLAY_START.getMonth(),1);d<=DISPLAY_END;d=new Date(d.getFullYear(),d.getMonth()+1,1))
+      DISPLAY_MONTHS.push({key:`${d.getFullYear()}-${d.getMonth()}`,label:`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`,year:d.getFullYear(),month:d.getMonth()});
     const SCHEDULE_START=new Date(2026,2,30);
     const WEEKS=13;
 
@@ -444,7 +450,7 @@
        ZAKŁADKA: AKTUALNY GRAFIK
     ══════════════════════════════════════════════ */
     function GrafikTab({people,shiftsMap,onShiftSaved,adminMode}){
-      const[activeMonth,setActiveMonth]=React.useState(()=>{const t=new Date();const m=t.getMonth();return(t.getFullYear()===2026&&m>=4&&m<=11)?`2026-${m}`:"2026-4";});
+      const[activeMonth,setActiveMonth]=React.useState(()=>{const t=new Date();const k=`${t.getFullYear()}-${t.getMonth()}`;return DISPLAY_MONTHS.some(m=>m.key===k)?k:DISPLAY_MONTHS[0].key;});
       const[subView,setSubView]=React.useState("tygodniowo");
       const[editModal,setEditModal]=React.useState(null);   // {cells:[{person,date}], currentShift}
       const[selectedDay,setSelectedDay]=React.useState(null);
@@ -454,8 +460,7 @@
       const[selection,setSelection]=React.useState(new Set());
       const[selectionWeek,setSelectionWeek]=React.useState(null);
 
-      const allMonths=[];
-      for(let m=4;m<=11;m++) allMonths.push({key:`2026-${m}`,label:`${MONTH_NAMES[m]} 2026`,year:2026,month:m});
+      const allMonths=DISPLAY_MONTHS;
 
       const today=new Date();today.setHours(0,0,0,0);
       const todayKey=dateKey(today);
@@ -480,8 +485,8 @@
       },[weeklyBlocks,currentWeekIdx,collapsedWeeks]);
 
       /* Kalendarz miesięczny dla widoku dziennego */
-      const firstDay=new Date(2026,cwMonth,1);
-      const lastDay=new Date(2026,cwMonth+1,0);
+      const firstDay=new Date(cwYear,cwMonth,1);
+      const lastDay=new Date(cwYear,cwMonth+1,0);
       const gridStart=startOfWeek(firstDay);
       const calCells=[];
       for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) calCells.push(new Date(d));
@@ -1134,12 +1139,12 @@
       const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
 
       const planMonths=[];
-      for(let m=4;m<=11;m++){
-        const firstDay=new Date(2026,m,1),lastDay=new Date(2026,m+1,0),gridStart=startOfWeek(firstDay);
+      for(const{year,month,label} of DISPLAY_MONTHS){
+        const firstDay=new Date(year,month,1),lastDay=new Date(year,month+1,0),gridStart=startOfWeek(firstDay);
         const cells=[];
         for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) cells.push(new Date(d));
         while(cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
-        planMonths.push({label:MONTH_NAMES[m]+" 2026",firstDay,lastDay,cells});
+        planMonths.push({label,firstDay,lastDay,cells});
       }
 
       const affectedWeekKeys=new Set();
@@ -1315,8 +1320,8 @@
        ZAKŁADKA: STATYSTYKI MIESIĘCZNE
     ══════════════════════════════════════════════ */
     function StatystykiTab({people,shiftsMap,adminMode}){
-      const[selYear,setSelYear]=React.useState(2026);
-      const[selMonth,setSelMonth]=React.useState(4);
+      const[selYear,setSelYear]=React.useState(()=>{const t=new Date();const m=DISPLAY_MONTHS.find(x=>x.year===t.getFullYear()&&x.month===t.getMonth())||DISPLAY_MONTHS[0];return m.year;});
+      const[selMonth,setSelMonth]=React.useState(()=>{const t=new Date();const m=DISPLAY_MONTHS.find(x=>x.year===t.getFullYear()&&x.month===t.getMonth())||DISPLAY_MONTHS[0];return m.month;});
 
       const stats=React.useMemo(()=>{
         const firstDay=new Date(selYear,selMonth,1),lastDay=new Date(selYear,selMonth+1,0);
@@ -1351,8 +1356,8 @@
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-wrap items-center gap-3">
             <div className="flex flex-wrap gap-1.5">
-              {MONTH_NAMES.slice(4,12).map((m,i)=>{const mi=i+4;return(
-                <button key={mi} onClick={()=>setSelMonth(mi)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selMonth===mi?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-indigo-50"}`}>{m}</button>
+              {DISPLAY_MONTHS.map(m=>{const active=selYear===m.year&&selMonth===m.month;return(
+                <button key={m.key} onClick={()=>{setSelYear(m.year);setSelMonth(m.month);}} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${active?"bg-indigo-700 text-white border-indigo-700":"bg-white text-gray-600 border-gray-200 hover:bg-indigo-50"}`}>{m.label}</button>
               );})}
             </div>
           </div>
