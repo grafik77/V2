@@ -944,14 +944,17 @@
       const[toast,setToast]=React.useState(null);
       const showToast=(msg,ok=true)=>{setToast({msg,ok});setTimeout(()=>setToast(null),2500);};
 
-      const cyprMonths=[];
-      for(let m=4;m<=5;m++){
-        const firstDay=new Date(2026,m,1),lastDay=new Date(2026,m+1,0),gridStart=startOfWeek(firstDay);
+      const t0=new Date();
+      const t1=new Date(t0.getFullYear(),t0.getMonth()+1,1);
+      const monthKeys=new Set([`${t0.getFullYear()}-${t0.getMonth()}`,`${t1.getFullYear()}-${t1.getMonth()}`]);
+      Object.keys(cyprusMap).forEach(dk=>{if((cyprusMap[dk]||[]).length){const[y,m]=dk.split("-").map(Number);monthKeys.add(`${y}-${m-1}`);}});
+      const cyprMonths=[...monthKeys].map(k=>k.split("-").map(Number)).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).map(([y,m])=>{
+        const firstDay=new Date(y,m,1),lastDay=new Date(y,m+1,0),gridStart=startOfWeek(firstDay);
         const cells=[];
         for(let d=new Date(gridStart);d<=lastDay||toDayIndex(d)!==0;d=addDays(d,1)) cells.push(new Date(d));
         while(cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
-        cyprMonths.push({label:MONTH_NAMES[m]+" 2026",firstDay,lastDay,cells});
-      }
+        return{label:MONTH_NAMES[m]+" "+y,firstDay,lastDay,cells};
+      }).reverse();
 
       const personColor=(personId)=>{
         const idx=people.findIndex(p=>p.id===personId);
@@ -1039,7 +1042,7 @@
           <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-5">
             <h2 className="text-xl font-bold text-cyan-900 flex items-center gap-2 mb-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0891b2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-              Praca na Cyprze — Maj i Czerwiec 2026
+              Praca na Cyprze
             </h2>
             <p className="text-sm text-cyan-700">{adminMode?"Kliknij dzień aby edytować.":"Włącz tryb admina, aby edytować."}</p>
             {copiedDay&&adminMode&&(

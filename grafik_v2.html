@@ -935,16 +935,21 @@
 
             {/* TAB: Praca na Cyprze */}
             {activeTab==="cypr" && (()=>{
-              const cyprMonths = [];
-              for (let m=4; m<=5; m++) {
-                const firstD = new Date(2026, m, 1);
-                const lastD  = new Date(2026, m+1, 0);
-                const gs = startOfWeekFn(firstD);
-                const cells = [];
-                for (let d=new Date(gs); d<=lastD||toDayIndex(d)!==0; d=addDays(d,1)) cells.push(new Date(d));
-                while (cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
-                cyprMonths.push({ label:MONTH_NAMES[m]+" 2026", firstDay:firstD, lastDay:lastD, cells });
-              }
+              const monthKeys = new Set();
+              Object.keys(cyprusMap).forEach(dk => {
+                if ((cyprusMap[dk]||[]).length) { const [y,m] = dk.split("-").map(Number); monthKeys.add(`${y}-${m-1}`); }
+              });
+              const cyprMonths = [...monthKeys].map(k=>k.split("-").map(Number))
+                .sort((a,b)=>b[0]-a[0]||b[1]-a[1])
+                .map(([y,m]) => {
+                  const firstD = new Date(y, m, 1);
+                  const lastD  = new Date(y, m+1, 0);
+                  const gs = startOfWeekFn(firstD);
+                  const cells = [];
+                  for (let d=new Date(gs); d<=lastD||toDayIndex(d)!==0; d=addDays(d,1)) cells.push(new Date(d));
+                  while (cells.length%7!==0) cells.push(addDays(cells[cells.length-1],1));
+                  return { label:MONTH_NAMES[m]+" "+y, firstDay:firstD, lastDay:lastD, cells };
+                });
 
               const personColor = (personId) => {
                 const idx = people.findIndex(p=>p.id===personId);
@@ -965,7 +970,7 @@
                   <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-5">
                     <div className="flex items-center gap-3 mb-1">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0891b2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-                      <h2 className="text-xl font-bold text-cyan-900">Praca na Cyprze — Maj i Czerwiec 2026</h2>
+                      <h2 className="text-xl font-bold text-cyan-900">Praca na Cyprze</h2>
                     </div>
                     <p className="text-sm text-cyan-700 ml-9">Widok miesięczny przypisanych dni pracy na Cyprze</p>
                   </div>
